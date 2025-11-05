@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -30,12 +30,6 @@ import {
 } from '../../components/Icons/Icons';
 
 import CustomSwitch from '../../components/CustomSwitch';
-
-const userData = {
-  name: 'Luis Felipe',
-  email: 'Luis.Felipe@senarmt.org.br',
-  avatarUrl: 'https://i.pravatar.cc/444',
-};
 
 const ProfileRow = ({
   iconName,
@@ -91,6 +85,8 @@ const ProfileRow = ({
 };
 
 export default function ProfileScreen() {
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState(''); // Estado para o email
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [isQrModalVisible, setQrModalVisible] = useState(false);
   const [isTermsModalVisible, setTermsModalVisible] = useState(false);
@@ -100,9 +96,51 @@ export default function ProfileScreen() {
 
   const navigation = useNavigation();
 
+  const formatUserName = fullName => {
+    if (!fullName) return 'Visitante';
+    const names = fullName.split(' ').slice(0, 2);
+    const formattedNames = names.map(name => {
+      if (!name) return '';
+      return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    });
+
+    return formattedNames.join(' ');
+  };
+
+  async function loadStorage() {
+    try {
+      // Busca o nome do usuário
+      const storageUser = await AsyncStorage.getItem('@atendeUser');
+      const formattedName = formatUserName(storageUser);
+      setUserName(formattedName);
+
+      // Busca o email do usuário - você precisa salvar isso no login
+      const storageEmail = await AsyncStorage.getItem('@atendeEmail');
+      if (storageEmail) {
+        setUserEmail(storageEmail);
+      } else {
+        // Se não encontrar no AsyncStorage, define um padrão ou busca da API
+        setUserEmail('usuario@email.com');
+        console.log('Email não encontrado no AsyncStorage');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      setUserName('Visitante');
+      setUserEmail('usuario@email.com');
+    }
+  }
+
+  useEffect(() => {
+    loadStorage();
+  }, []);
+
   const confirmLogout = async () => {
     try {
-      await AsyncStorage.removeItem('token');
+      await AsyncStorage.multiRemove([
+        'token',
+        '@atendeUser',
+        '@atendeUserEmail',
+      ]);
       setLogoutModalVisible(false);
       navigation.reset({
         index: 0,
@@ -125,9 +163,12 @@ export default function ProfileScreen() {
 
         <View style={styles.card}>
           <View style={styles.profileHeader}>
-            <Image source={{ uri: userData.avatarUrl }} style={styles.avatar} />
-            <Text style={styles.userName}>{userData.name}</Text>
-            <Text style={styles.userEmail}>{userData.email}</Text>
+            <Image
+              style={styles.avatar}
+              source={require('../../assets/AdminPhoto.png')}
+            />
+            <Text style={styles.userName}>{userName}</Text>
+            {/* <Text style={styles.userEmail}>{userEmail}</Text>{' '} */}
             <TouchableOpacity style={styles.editButton}>
               <Text style={styles.editButtonText}>Editar Perfil</Text>
             </TouchableOpacity>
@@ -254,6 +295,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Ubuntu-Bold',
     fontSize: ms(17),
     color: '#212121',
+    paddingBottom: 8,
   },
   userEmail: {
     fontFamily: 'Ubuntu-Regular',

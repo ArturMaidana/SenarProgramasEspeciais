@@ -1,13 +1,55 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, StyleSheet, Text, ScrollView } from 'react-native';
 import RunningCard from '../../components/RunningCard';
-
+import api from './../../services/endpont';
+import Loading from '../../components/ui/Loading';
+import { formatDate } from '../../utils/dateFormat';
+import { dataAtual } from '../../utils/date';
 import { s, vs, ms } from 'react-native-size-matters';
 
 export default function AttendanceToday({ navigation }) {
-  const handleCardPress = id => {
-    navigation.navigate('Mutirao');
+  const [loading, setLoading] = useState(true);
+  const [runningEvents, setRunningEvents] = useState([]);
+
+  const intervalRef = useRef(null);
+
+  const handleCardPress = event => {
+    navigation.navigate('Atendimentos', {
+      eventId: event.id,
+      dateEvent: event.started_at, // ou outro campo: event.date, event.startedAt...
+    });
   };
+
+  const dateNow = dataAtual(); // mesmo usado na Home
+
+  const loadTodayEvents = useCallback(async () => {
+    try {
+      const response = await api.getEventsAtendeDate(dateNow);
+
+      const events = response.data || [];
+
+      // Só “Em execução”
+      const executing = events.filter(ev => ev.status === 'Em execução');
+
+      setRunningEvents(executing);
+    } catch (error) {
+      console.log('Erro ao carregar eventos:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTodayEvents();
+  }, []);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => loadTodayEvents(), 5000);
+    return () => clearInterval(intervalRef.current);
+  }, [loadTodayEvents]);
+
+  if (loading) return <Loading message="Carregando eventos..." />;
+
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <ScrollView
@@ -20,30 +62,28 @@ export default function AttendanceToday({ navigation }) {
         </Text>
 
         <ScrollView style={styles.scrollcontainer}>
-          <RunningCard
-            tagText="Mutirão Rural"
-            idText="Alta Boa Vista - 04/02/2025"
-            location="Aviso aos cidadãos de Alta Boa Vista: Vai acontecer um mutirão em Secretaria de igualdade Racial do município das 9h às 17h. Aproveite a oportunidade para regularizar sua situação; Fique atento à data! "
-            date="13:05"
-            statusText="Em Execução"
-            onPress={() => handleCardPress(1)}
-          />
-          <RunningCard
-            tagText="Mutirão Rural"
-            idText="Alta Boa Vista - 04/02/2025"
-            location="Aviso aos cidadãos de Alta Boa Vista: Vai acontecer um mutirão em Secretaria de igualdade Racial do município das 9h às 17h. Aproveite a oportunidade para regularizar sua situação; Fique atento à data! "
-            date="13:05"
-            statusText="Em Execução"
-            onPress={() => handleCardPress(2)}
-          />
-          <RunningCard
-            tagText="Mutirão Rural"
-            idText="Alta Boa Vista - 04/02/2025"
-            location="Aviso aos cidadãos de Alta Boa Vista: Vai acontecer um mutirão em Secretaria de igualdade Racial do município das 9h às 17h. Aproveite a oportunidade para regularizar sua situação; Fique atento à data! "
-            date="13:05"
-            statusText="Em Execução"
-            onPress={() => handleCardPress(3)}
-          />
+          {runningEvents.length === 0 && (
+            <Text style={styles.emptyText}>
+              Nenhum mutirão em execução hoje.
+            </Text>
+          )}
+
+          {runningEvents.map(event => {
+            // ✅ AGORA SIM: o event existe, aqui é seguro acessar event.city etc.
+            const textoDescricao = `Aviso aos cidadãos de ${event.city}: Vai acontecer um mutirão rural, aproveite a oportunidade para regularizar sua situação; fique atento à data!`;
+
+            return (
+              <RunningCard
+                key={event.id}
+                tagText="Mutirão Rural"
+                idText={`${event.city} - ${formatDate(event.started_at)}`}
+                location={textoDescricao}
+                date={event.start_time}
+                statusText="Em Execução"
+                onPress={() => handleCardPress(event)}
+              />
+            );
+          })}
         </ScrollView>
       </ScrollView>
     </View>
@@ -51,10 +91,7 @@ export default function AttendanceToday({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffffff',
-  },
+  container: { flex: 1 },
   scrollContentContainer: {
     paddingHorizontal: s(15),
     paddingBottom: vs(120),
@@ -64,12 +101,14 @@ const styles = StyleSheet.create({
     fontSize: ms(19),
     fontFamily: 'Ubuntu-Bold',
     color: '#333',
-    marginBottom: vs(5),
   },
   scrollcontainer: {
     padding: ms(2),
     marginTop: vs(10),
   },
+  emptyText: {
+    fontFamily: 'Ubuntu',
+    fontSize: 14,
+    color: '#555',
+  },
 });
-
-//SENAR MT Programas Especiais

@@ -29,7 +29,10 @@ const FilterModal = ({
 }) => {
   const defaultStatuses = [
     { name: 'Aguardando', icon: <ClockIcon width={16} height={16} /> },
-    { name: 'Em Atendimento', icon: <EyeIcon width={16} height={16} /> },
+    {
+      name: 'Atendimento Preferencial',
+      icon: <EyeIcon width={16} height={16} />,
+    },
     { name: 'Realizada', icon: <CheckIconFilter width={16} height={16} /> },
     { name: 'Desistência', icon: <CancelIcon width={16} height={16} /> },
   ];

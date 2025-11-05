@@ -155,6 +155,49 @@ export default {
     return response?.data || [];
   },
 
+  searchPeopleByName: async name => {
+    try {
+      // 1. pega todos os eventos
+      const base = await api.get('/eventos-atende');
+      const events = Array.isArray(base.data) ? base.data : [];
+
+      let results = [];
+
+      // 2. busca participantes de cada evento
+      for (const ev of events) {
+        try {
+          const fullEvent = await api.get(
+            `/evento-atendimento/visualizar/${ev.id}`,
+          );
+
+          const participants = fullEvent?.data?.participants || [];
+
+          // 3. filtragem
+          participants.forEach(p => {
+            if (
+              p.name_participant?.toLowerCase().includes(name.toLowerCase())
+            ) {
+              results.push({
+                ...p,
+                event_id: ev.id,
+                event_name: ev.name,
+                city: ev.city,
+                event_status: ev.status,
+              });
+            }
+          });
+        } catch (innerError) {
+          console.log('Erro em evento', ev.id, innerError);
+        }
+      }
+
+      return results;
+    } catch (error) {
+      console.log('Erro na busca global', error);
+      return [];
+    }
+  },
+
   postEventParticipant: async (
     cpf,
     name_participant,

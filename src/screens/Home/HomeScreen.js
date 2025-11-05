@@ -1,31 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Text,
-  Image,
-} from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import CardEvent from '../../components/ui/CardEvent';
 import CardNotEvent from '../../components/ui/CardNotEvent';
+import GlobalSearchBar from '../../components/ui/GlobalSearch';
 import MonthCarousel from '../../components/ui/MonthCarousel';
 import Header from '../../components/ui/Header';
 import { dataAtual } from '../../utils/date';
 import api from './../../services/endpont';
 
-// Componentes reutilizáveis
 const Container = ({ children }) => (
   <View style={styles.container}>{children}</View>
 );
 
-export default function Home() {
+export default function Home({ navigation }) {
   const dateNow = dataAtual();
   const [monthlyEventCounts, setMonthlyEventCounts] = useState({});
 
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [educationalEvents, setEducationalEvents] = useState([]);
+
+  const [globalSearchText, setGlobalSearchText] = useState('');
+  const [globalResults, setGlobalResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   const scrollRef = useRef(null);
+
+  useEffect(() => {
+    function loadMonthlyCounts() {
+      const EventsCount = {};
+
+      for (let i = 0; i < 12; i++) {
+        EventsCount[i] = Math.floor(Math.random() * (20 - 3 + 1)) + 3;
+      }
+
+      console.log(' MONTH COUNTS:', EventsCount);
+      setMonthlyEventCounts(EventsCount);
+    }
+
+    loadMonthlyCounts();
+  }, []);
 
   function updatedMonth(index) {
     setSelectedMonth(index);
@@ -60,24 +73,10 @@ export default function Home() {
     }, 100);
   }, []);
 
-  const months = [
-    'JAN',
-    'FEV',
-    'MAR',
-    'ABR',
-    'MAI',
-    'JUN',
-    'JUL',
-    'AGO',
-    'SET',
-    'OUT',
-    'NOV',
-    'DEZ',
-  ];
-
   return (
     <Container>
       <Header />
+      <GlobalSearchBar navigation={navigation} />
 
       <MonthCarousel
         displayMonthIndex={selectedMonth}
@@ -168,5 +167,6 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     padding: 16,
+    paddingBottom: 120,
   },
 });

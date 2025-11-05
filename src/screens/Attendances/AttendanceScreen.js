@@ -209,30 +209,49 @@ export default function Service() {
     setEventsFetched(true);
     setHasCalledGetEvents(false);
 
+    const statusToId = {
+      Aguardando: 1,
+      Realizada: 3,
+      Desistência: 4,
+      'Atendimento Preferencial': 1,
+    };
+
+    const situationIds = selectedSituations.map(s => statusToId[s]);
+
     try {
+      // mantém a mesma estrutura da sua API antiga (3 parâmetros)
       const services = await api.patchEventsServices(
         eventId,
         searchName,
-        selectedSituations,
+        situationIds,
       );
 
       if (!services.error) {
         setIsInstrutor(services.data.isInstrutor);
         setIsCreateEvent(services.data.isCreateEvent);
-        setEducationalEvents(services.data.eventServices);
+
+        let data = services.data.eventServices;
+
+        // ✅ filtra localmente os "Preferenciais"
+        if (selectedSituations.includes('Atend. Preferencial')) {
+          data = data.filter(
+            item => item.situation === 1 && item.prioritie_id > 1,
+          );
+        }
+
+        setEducationalEvents(data);
       }
     } catch (error) {
       Dialog.show({
         type: ALERT_TYPE.DANGER,
-        title: 'Erros',
-        textBody: error.message + ' Erro desconhecido.',
+        title: 'Erro',
+        textBody: error.message || 'Erro desconhecido.',
         button: 'Fechar',
       });
     } finally {
       setLoading(false);
     }
   }
-
   const getEvents = useCallback(async () => {
     if (shouldFetch) {
       handleGetEvents();
@@ -321,19 +340,19 @@ export default function Service() {
         <Loading message="Carregando informações..." />
       ) : (
         <>
-          {isFiltersVisible && (
-            <View style={styles.filterWrapper}>
-              <FilterPanel
-                searchName={searchName}
-                setSearchName={setSearchName}
-                selectedSituations={selectedSituations}
-                setSelectedSituations={setSelectedSituations}
-                situationsMaps={situationsMaps}
-                onApply={handleGetEvents}
-                onClear={handleClear}
-              />
-            </View>
-          )}
+          <SearchBarWithFilters
+            searchValue={searchName}
+            onSearchChange={text => setSearchName(text)}
+            onSearchSubmit={() => handleGetEvents()}
+            selectedStatuses={selectedSituations}
+            onStatusChange={setSelectedSituations}
+            filterConfig={{
+              modalTitle: 'Filtros',
+              statusSubtitle: 'Status do Atendimento',
+              applyButtonText: 'Aplicar',
+              onApply: () => handleGetEvents(),
+            }}
+          />
           <ScrollView>
             {educationalEvents.map((client, index) => {
               const icon = categoryIcons[normalize(client.name)] || (

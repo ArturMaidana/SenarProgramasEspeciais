@@ -4,18 +4,31 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BellIcon } from '../Icons/Icons';
 
 export default function Header() {
-  const [userName, setUserName] = useState('Carregando...');
+  const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState(null);
   const [location, setLocation] = useState('Buscando localização...');
 
+  const formatUserName = fullName => {
+    if (!fullName) return 'Visitante';
+
+    const names = fullName.split(' ').slice(0, 2);
+
+    const formattedNames = names.map(name => {
+      if (!name) return '';
+      return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    });
+
+    return formattedNames.join(' ');
+  };
+
   async function loadStorage() {
     try {
-      const storageUser = await AsyncStorage.getItem('@ategInsemincaoName');
-      setUserName(storageUser || 'Visitante');
+      const storageUser = await AsyncStorage.getItem('@atendeUser');
+
+      const formattedName = formatUserName(storageUser);
+      setUserName(formattedName);
 
       setUserAvatar(require('../../assets/AdminPhoto.png'));
-
-      // Mock da localização - você pode implementar geolocalização real aqui
       setLocation('Cuiabá, Mato Grosso');
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -28,7 +41,6 @@ export default function Header() {
   }, []);
 
   const handleNotificationPress = () => {
-    // Aqui você pode adicionar a lógica para abrir notificações
     console.log('Notificações pressionadas');
   };
 

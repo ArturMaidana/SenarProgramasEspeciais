@@ -7,15 +7,15 @@ import { CalendarIcon, ArrowRightIcon, PinIcon } from '../Icons/Icons';
 
 const STATUS_STYLES = {
   Fechamento: {
-    color: '#00A859',
+    color: '#ff2727ff',
   },
   'Em execução': {
-    color: '#ff7b00ff',
+    color: '#277dffff',
   },
   Programado: {
     color: '#6c757d',
   },
-  default: {
+  'Em preenchimento': {
     color: '#6c757d',
   },
 };
