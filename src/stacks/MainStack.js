@@ -5,13 +5,14 @@ import SignIn from '../screens/Login/SignInScreen';
 import Splash from '../screens/Preload/SplashScreen';
 import MainTabs from '../stacks/MainTabs';
 import Atendimento from '../screens/Attendances/AttendanceScreen';
-import Mutirao from '../screens/Mutiroes/AtendimentosMutiroes';
 import ForgetPassword from '../screens/ForgetPassword/ForgetPassword';
 import Relatorio from '../screens/Relatorios/RelatorioScreen';
 import ServiceDetailsScreen from '../screens/Relatorios/ServiceDetailsScreen';
 import SelectMutirao from '../screens/SelectMutiraoScreen/SelectMutiraoScreen';
+import ShowService from '../screens/FormsParticipant/ShowService';
+import CreateService from '../screens/FormsParticipant/CreateService';
 
-import NewFormulario from '../screens/ParticipantFormScreen/ParticipantFormScreen';
+import NewFormulario from '../screens/FormsParticipant/RegisterService';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,11 +30,12 @@ export default function MainStack() {
       <Stack.Screen name="SignIn" component={SignIn} />
       <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
       <Stack.Screen name="Atendimentos" component={Atendimento} />
-      <Stack.Screen name="Mutirao" component={Mutirao} />
       <Stack.Screen name="NewFormulario" component={NewFormulario} />
       <Stack.Screen name="Relatorio" component={Relatorio} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetailsScreen} />
       <Stack.Screen name="SelectMutirao" component={SelectMutirao} />
+      <Stack.Screen name="ShowService" component={ShowService} />
+      <Stack.Screen name="CreateService" component={CreateService} />
 
       <Stack.Screen name="MainTabs" component={MainTabs} />
     </Stack.Navigator>

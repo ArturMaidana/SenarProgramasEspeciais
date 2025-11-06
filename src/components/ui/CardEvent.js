@@ -29,7 +29,7 @@ const CardEvent = ({ eventId, title, dateEvent, location, date, status }) => {
     <TouchableOpacity
       style={styles.cardContainer}
       onPress={() =>
-        navigation.navigate('Atendimentos', { eventId, dateEvent })
+        navigation.navigate('Atendimentos', { eventId, dateEvent, status })
       }
     >
       <View style={styles.headerContainer}>

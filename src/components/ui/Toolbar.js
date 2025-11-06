@@ -21,7 +21,7 @@ const Toolbar = ({
 
   const handleNavigate = () => {
     onNavigate();
-    navigation.navigate('RegisterService', {
+    navigation.navigate('NewFormulario', {
       eventId,
       genders,
       states,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     paddingVertical: 10,
     paddingTop: 50,
   },
@@ -71,14 +71,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButton: {
-    marginRight: 16,
+    marginRight: 2,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Ubuntu-Regular',
     marginLeft: 10,
   },
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     color: '#303030ff',
   },
   toolbarTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   addButton: {

@@ -17,7 +17,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { formatDate } from '../../utils/dateFormat';
 import { formatPhoneNumber } from '../../utils/formatInput';
-import api from './../../services/endpont';
+import api from '../../services/endpont';
 import { validarCampos, validarHistorico } from '../../utils/valideInput';
 import { ALERT_TYPE, Dialog } from 'react-native-alert-notification';
 import { ms } from 'react-native-size-matters'; // Importando o size-matters
@@ -555,6 +555,12 @@ const RegisterService = () => {
     } else if (etapaAtual === 2) {
       return (
         <View style={styles.formContainer}>
+          <Toolbar
+            title="Dados do Participante"
+            iconColor="#2e2e2eff"
+            titleColor="#535353ff"
+            onNavigate={() => navigation.goBack()} // Corrigi para navegação
+          />
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Nome do Participante</Text>
             <TextInput
@@ -602,9 +608,9 @@ const RegisterService = () => {
                     onPress={() => handleCardPress(item.id)}
                   >
                     {selectedIds.includes(item.id) ? (
-                      <CheckboxFill color="#333" />
+                      <CheckboxFill color="#00A859" />
                     ) : (
-                      <Checkbox color="#00A859" />
+                      <Checkbox color="#333" />
                     )}
                   </TouchableOpacity>
                 </View>
@@ -620,12 +626,17 @@ const RegisterService = () => {
             <Text style={styles.sectionTitle}>Histórico Médico</Text>
 
             <View style={styles.checkboxContainer}>
-              <Checkbox
-                status={alergiasChecked ? 'checked' : 'unchecked'}
+              <TouchableOpacity
                 onPress={() => setAlergiasChecked(!alergiasChecked)}
-                color="#00A859"
-              />
-              <Text style={styles.checkboxLabel}>Possui alergias?</Text>
+                style={{ flexDirection: 'row', alignItems: 'center' }}
+              >
+                {alergiasChecked ? (
+                  <CheckboxFill color="#00A859" />
+                ) : (
+                  <Checkbox color="#333" />
+                )}
+                <Text style={styles.checkboxLabel}>Possui alergias?</Text>
+              </TouchableOpacity>
             </View>
             <TextInput
               style={styles.textarea}
@@ -638,12 +649,17 @@ const RegisterService = () => {
             />
 
             <View style={styles.checkboxContainer}>
-              <Checkbox
-                status={medicamentosChecked ? 'checked' : 'unchecked'}
+              <TouchableOpacity
                 onPress={() => setMedicamentosChecked(!medicamentosChecked)}
-                color="#00A859"
-              />
-              <Text style={styles.checkboxLabel}>Medicamentos em uso?</Text>
+                style={{ flexDirection: 'row', alignItems: 'center' }}
+              >
+                {medicamentosChecked ? (
+                  <CheckboxFill color="#00A859" />
+                ) : (
+                  <Checkbox color="#333" />
+                )}
+                <Text style={styles.checkboxLabel}>Medicamentos em uso?</Text>
+              </TouchableOpacity>
             </View>
             <TextInput
               style={styles.textarea}
@@ -656,12 +672,17 @@ const RegisterService = () => {
             />
 
             <View style={styles.checkboxContainer}>
-              <Checkbox
-                status={condicoesChecked ? 'checked' : 'unchecked'}
+              <TouchableOpacity
                 onPress={() => setCondicoesChecked(!condicoesChecked)}
-                color="#00A859"
-              />
-              <Text style={styles.checkboxLabel}>Condições médicas?</Text>
+                style={{ flexDirection: 'row', alignItems: 'center' }}
+              >
+                {condicoesChecked ? (
+                  <CheckboxFill color="#00A859" />
+                ) : (
+                  <Checkbox color="#333" />
+                )}
+                <Text style={styles.checkboxLabel}>Condições médicas?</Text>
+              </TouchableOpacity>
             </View>
             <TextInput
               style={styles.textarea}
@@ -844,13 +865,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: ms(2), // Adicionado para alinhar com o input
   },
   primaryButton: {
-    backgroundColor: '#00A859', // Cor dos exemplos
+    flex: ms(1),
+    backgroundColor: '#00A859',
+    borderWidth: ms(1),
+    borderColor: '#00A859',
     borderRadius: ms(8),
     height: ms(45),
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: ms(10),
-    flex: ms(1),
   },
   previousButton: {
     flex: ms(1),

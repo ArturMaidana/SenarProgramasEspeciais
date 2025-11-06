@@ -15,7 +15,7 @@ export default function GlobalSearchBar({ navigation }) {
   const [results, setResults] = useState([]);
 
   const searchableItems = [
-    { title: 'Mutirões', screen: 'SelectMutirao' },
+    { title: 'Mutirões', screen: 'Mutirao' },
     { title: 'Meus Atendimentos', screen: 'Atendimentos' },
     { title: 'Relatórios', screen: 'Relatorio' },
     { title: 'Perfil', screen: 'Profile' }, // coloque o nome da sua tela de perfil

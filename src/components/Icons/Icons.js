@@ -57,6 +57,28 @@ export const HomeIcon = ({ size = 28, color = '#FFF' }) => (
   </Svg>
 );
 
+export const Checkbox = ({ size = 16, color = '333' }) => {
+  return (
+    <Svg viewBox="0 0 32 32" width={size} height={size}>
+      <Path
+        fill={color}
+        d="M26 4H6a2 2 0 0 0-2 2v20a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2M6 26V6h20v20Z"
+      ></Path>
+    </Svg>
+  );
+};
+
+export const CheckboxFill = ({ size = 16, color = '#00A859' }) => {
+  return (
+    <Svg viewBox="0 0 512 512" width={size} height={size}>
+      <Path
+        fill={color}
+        d="M400 48H112a64.07 64.07 0 0 0-64 64v288a64.07 64.07 0 0 0 64 64h288a64.07 64.07 0 0 0 64-64V112a64.07 64.07 0 0 0-64-64m-35.75 138.29l-134.4 160a16 16 0 0 1-12 5.71h-.27a16 16 0 0 1-11.89-5.3l-57.6-64a16 16 0 1 1 23.78-21.4l45.29 50.32l122.59-145.91a16 16 0 0 1 24.5 20.58"
+      ></Path>
+    </Svg>
+  );
+};
+
 export const DashboardIcon = ({ size = 28, color = '#FFF' }) => (
   <Svg width={size} height={size} viewBox="0 0 14 14">
     <G
@@ -187,7 +209,7 @@ export const BellIcon = ({ size = 24, color = '#333' }) => (
   </Svg>
 );
 
-export const EyeIcon = ({ size = 24, color = '#333' }) => (
+export const EyeIcon = ({ size = 24, color = '#00A859' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <G fill="none" stroke={color} strokeWidth={1.5}>
       <Circle cx="12" cy="12" r="3" />

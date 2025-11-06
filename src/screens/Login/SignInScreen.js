@@ -18,12 +18,7 @@ import LogoSenar2 from '../../assets/LogoSenar2.svg';
 import NomeSenar from '../../assets/NameApp.svg';
 import Famato from '../../assets/Famato.svg';
 import { s, vs, ms } from 'react-native-size-matters';
-import {
-  EmailIcon,
-  LockIcon,
-  EyeIcon,
-  EyeOffIcon,
-} from '../../components/Icons/Icons'; // Importe os ícones de olho
+import { EmailIcon, LockIcon } from '../../components/Icons/Icons';
 import { UserContext } from '../../contexts/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -36,7 +31,6 @@ export default function SignInScreen() {
   const { signIn, loadingAuth } = useContext(UserContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar senha
   const navigation = useNavigation();
 
   const logoContainerY = useRef(new Animated.Value(0)).current;
@@ -111,11 +105,6 @@ export default function SignInScreen() {
     return result;
   };
 
-  // Função para alternar a visibilidade da senha
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
     <View style={styles.container}>
       <Animated.View
@@ -146,7 +135,7 @@ export default function SignInScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             enableOnAndroid={true}
-            extraScrollHeight={ms(20)}
+            extraScrollHeight={ms(20)} // Um pequeno ajuste extra de altura se necessário
           >
             <View style={styles.formContent}>
               <Text style={styles.title}>Seja Bem-vindo!</Text>
@@ -175,21 +164,10 @@ export default function SignInScreen() {
                   style={styles.input}
                   placeholder=" Digite sua senha"
                   placeholderTextColor="#aaa"
-                  secureTextEntry={!showPassword} // Alterna entre texto normal e pontos
+                  secureTextEntry={true}
                   value={password}
                   onChangeText={setPassword}
                 />
-                {/* Botão para mostrar/ocultar senha */}
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={toggleShowPassword}
-                >
-                  {showPassword ? (
-                    <EyeOffIcon width={20} height={20} />
-                  ) : (
-                    <EyeIcon width={20} height={20} />
-                  )}
-                </TouchableOpacity>
               </View>
 
               <TouchableOpacity
@@ -263,6 +241,7 @@ const styles = StyleSheet.create({
     marginBottom: ms(15),
     backgroundColor: '#fffffff9',
   },
+
   input: {
     fontFamily: 'Ubuntu-Light',
     flex: 1,
@@ -270,11 +249,6 @@ const styles = StyleSheet.create({
     fontSize: ms(14),
     color: '#333',
     paddingLeft: ms(10),
-    paddingRight: ms(10), // Espaço para o botão do olho
-  },
-  eyeButton: {
-    padding: ms(5),
-    marginLeft: ms(5),
   },
   forgotPasswordButton: {
     alignSelf: 'flex-end',

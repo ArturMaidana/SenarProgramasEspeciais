@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { s, vs, ms } from 'react-native-size-matters';
 import PieChart from '../../components/PieChart';
+import api from '../../services/endpont';
+import { useRoute } from '@react-navigation/native';
 
 import {
   OutlineCalendarToday,
@@ -18,20 +20,6 @@ import {
   OutlineFileDownload,
   BackPage,
 } from '../../components/Icons/Icons';
-
-const reportData = {
-  title: 'Mutirão Rural - Nº 2025M1620091219T - Alta Floresta',
-  date: '12 de Agosto de 2025',
-  location: 'Alta Floresta, MT',
-  totalAttendees: 1050,
-  services: [
-    { name: 'Oftalmologia', percentage: 20, count: 410 },
-    { name: 'Odontologia', percentage: 12, count: 273 },
-    { name: 'Enfermagem', percentage: 19, count: 252 },
-    { name: 'Barbearia', percentage: 6, count: 115 },
-    { name: 'Confecção de Óculos', percentage: 3, count: 15 },
-  ],
-};
 
 const ReportCard = ({ title, icon, children }) => (
   <View style={styles.cardContainer}>
@@ -44,8 +32,73 @@ const ReportCard = ({ title, icon, children }) => (
 );
 
 export default function ReportScreen({ navigation }) {
+  const route = useRoute();
+  const { eventId } = route.params; // ✅ ID do mutirão selecionado
+
+  const [report, setReport] = useState(null);
+
+  useEffect(() => {
+    async function loadReport() {
+      try {
+        const response = await api.getShowEvent(eventId);
+        const data = response?.data;
+
+        if (!data) {
+          console.log('❌ Nenhum dado retornado da API');
+          return;
+        }
+
+        const event = data.event || {};
+        const categories = data.services_category || [];
+
+        const title = event.name || 'Evento';
+        const date = new Date(event.started_at).toLocaleDateString('pt-BR');
+        const location = `${event.city || 'Cidade não informada'}, MT`;
+
+        // ✅ total geral
+        const total = categories.reduce(
+          (acc, c) => acc + (c.participants?.length || 0),
+          0,
+        );
+
+        // ✅ distribuição por categoria
+        const services = categories.map(c => {
+          const count = c.participants?.length || 0;
+          const pct =
+            total > 0 ? Number(((count / total) * 100).toFixed(1)) : 0;
+
+          return {
+            name: c.name,
+            count,
+            percentage: pct,
+          };
+        });
+
+        setReport({
+          title,
+          date,
+          location,
+          totalAttendees: total,
+          services,
+        });
+      } catch (err) {
+        console.log('Erro ao carregar relatório:', err);
+      }
+    }
+
+    loadReport();
+  }, [eventId]);
+  if (!report) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Carregando relatório...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <BackPage color="#212121" />
@@ -57,38 +110,44 @@ export default function ReportScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
+        {/* CARD PRINCIPAL */}
         <View style={styles.cardContainer}>
           <Text style={styles.statsTitle}>Estatísticas Médicas</Text>
-          <Text style={styles.statsSubtitle}>{reportData.title}</Text>
+          <Text style={styles.statsSubtitle}>{report.title}</Text>
+
           <View style={styles.statsRow}>
             <OutlineCalendarToday color="#757575" />
-            <Text style={styles.statsText}>{reportData.date}</Text>
+            <Text style={styles.statsText}>{report.date}</Text>
           </View>
+
           <View style={styles.statsRow}>
             <LocationPin color="#757575" />
-            <Text style={styles.statsText}>{reportData.location}</Text>
+            <Text style={styles.statsText}>{report.location}</Text>
           </View>
+
           <View style={styles.statsRow}>
             <UsersGroup color="#757575" />
             <Text style={styles.statsText}>
-              {reportData.totalAttendees} atendimentos
+              {report.totalAttendees} atendimentos
             </Text>
           </View>
         </View>
 
+        {/* GRÁFICO */}
         <ReportCard
           title="Distribuição de Atendimentos"
           icon={<BaselineElectricBolt color="#333" />}
         >
           <View style={styles.chartWrapper}>
             <PieChart
-              data={reportData.services}
-              totalValue={reportData.totalAttendees}
+              data={report.services}
+              totalValue={report.totalAttendees}
               size={s(180)}
             />
           </View>
         </ReportCard>
 
+        {/* LISTA DE TIPOS */}
         <View style={styles.sectionHeader}>
           <BaselineCallMissedOutgoing
             width={s(22)}
@@ -98,22 +157,15 @@ export default function ReportScreen({ navigation }) {
           <Text style={styles.cardTitle}>Tipos de Atendimento</Text>
         </View>
 
-        {reportData.services.map(service => (
-          <TouchableOpacity
-            key={service.name}
-            style={styles.serviceCard}
-            onPress={() =>
-              navigation.navigate('ServiceDetails', {
-                serviceName: service.name,
-              })
-            }
-          >
+        {report.services.map(service => (
+          <TouchableOpacity key={service.name} style={styles.serviceCard}>
             <View>
               <Text style={styles.serviceName}>{service.name}</Text>
               <Text style={styles.servicePercentage}>
                 {service.percentage}% do total
               </Text>
             </View>
+
             <View style={styles.serviceCountContainer}>
               <Text style={styles.serviceCount}>{service.count}</Text>
               <Text style={styles.serviceCountLabel}>atendimentos</Text>
@@ -122,6 +174,7 @@ export default function ReportScreen({ navigation }) {
         ))}
       </ScrollView>
 
+      {/* BOTÃO PDF */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.exportButton}>
           <OutlineFileDownload width={s(20)} height={s(20)} color="#FFFFFF" />
@@ -132,11 +185,11 @@ export default function ReportScreen({ navigation }) {
   );
 }
 
+/* --- STYLES --- */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffffff',
-  },
+  container: { flex: 1, backgroundColor: '#ffffff' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { fontFamily: 'Ubuntu-Regular', fontSize: 16, color: '#555' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -160,10 +213,6 @@ const styles = StyleSheet.create({
     padding: s(15),
     marginBottom: vs(15),
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   statsTitle: {
     fontFamily: 'Ubuntu-Bold',
@@ -174,7 +223,7 @@ const styles = StyleSheet.create({
   statsSubtitle: {
     fontFamily: 'Ubuntu-Light',
     fontSize: ms(13),
-    color: '#000000ff',
+    color: '#000',
     marginBottom: vs(12),
   },
   statsRow: {
@@ -219,10 +268,6 @@ const styles = StyleSheet.create({
     padding: s(15),
     marginBottom: vs(10),
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   serviceName: {
     fontFamily: 'Ubuntu-Bold',
@@ -235,9 +280,7 @@ const styles = StyleSheet.create({
     color: '#757575',
     marginTop: vs(4),
   },
-  serviceCountContainer: {
-    alignItems: 'flex-end',
-  },
+  serviceCountContainer: { alignItems: 'flex-end' },
   serviceCount: {
     fontFamily: 'Ubuntu-Bold',
     fontSize: ms(14),
@@ -247,7 +290,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Ubuntu-Regular',
     fontSize: ms(13),
     color: '#757575',
-    marginTop: vs(2),
   },
   footer: {
     position: 'absolute',
@@ -257,7 +299,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: s(15),
     paddingBottom: vs(25),
     paddingTop: vs(10),
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#fff',
   },
   exportButton: {
     backgroundColor: '#00A859',

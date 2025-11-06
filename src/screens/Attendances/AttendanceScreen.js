@@ -55,7 +55,7 @@ const categoryIcons = {
   BARBEARIA: <ScissorsIcon />,
   'CORTE DE CABELO': <ScissorsIcon />,
   MAQUIAGEM: <MakeupBrushIcon />,
-  'CONFECÇÃO ÓCULOS': <GlassesIcon />,
+  'ENTREGA DE ÓCULOS': <GlassesIcon />,
 };
 
 export default function Service() {
@@ -66,7 +66,7 @@ export default function Service() {
   const { eventId, dateEvent } = route.params || {};
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [searchValue, setSearchValue] = useState('');
-  const [isSectionVisible, setSectionVisible] = useState([true, false, false]);
+  const [isSectionVisible, setSectionVisible] = useState([]);
   const [isFiltersVisible, setFiltersVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -100,6 +100,15 @@ export default function Service() {
 
   const isFocused = useIsFocused();
   const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (educationalEvents.length > 0 && isSectionVisible.length === 0) {
+      const initialVisibility = educationalEvents.map(
+        (_, index) => index === 0,
+      );
+      setSectionVisible(initialVisibility);
+    }
+  }, [educationalEvents.length]);
 
   const toggleSection = index => {
     setSectionVisible(prev =>
@@ -356,7 +365,12 @@ export default function Service() {
           <ScrollView>
             {educationalEvents.map((client, index) => {
               const icon = categoryIcons[normalize(client.name)] || (
-                <DefaultIcon />
+                <CancelIcon />
+              );
+
+              console.log(
+                `Serviço: ${client.name}, Participantes:`,
+                client.participants?.length,
               );
 
               return (
