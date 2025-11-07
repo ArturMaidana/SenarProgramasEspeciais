@@ -1,6 +1,5 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { ClockIcon } from '../Icons/Icons';
 
 const CardNotEvent = () => {
@@ -61,7 +60,6 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
-  // Estilos do CardEvent
   eventContainer: {
     padding: 12,
     backgroundColor: '#fff',

@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   icon: {
-    marginRight: 12, // antes era 8
+    marginRight: 12,
     color: '#555555',
   },
   iconWrap: {
-    marginRight: 5, // espaçamento entre ícone e texto
-    alignItems: 'center', // alinha verticalmente com o texto
+    marginRight: 5,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   infoText: {
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
   status: {
-    fontWeight: '900',
+    fontWeight: '500',
     fontSize: 12,
   },
 });

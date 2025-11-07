@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Image,
 } from 'react-native';
 import { s, vs, ms } from 'react-native-size-matters';
 
@@ -52,7 +51,7 @@ export default function SelectMutiraoScreen({ navigation }) {
 
   const handleStart = () => {
     if (selectedMutirao) {
-      navigation.navigate('MainTabs', { mutiraoType: selectedMutirao });
+      navigation.navigate('TabNavigator', { mutiraoType: selectedMutirao });
     }
   };
 
@@ -114,14 +113,14 @@ const styles = StyleSheet.create({
     marginBottom: vs(30),
   },
   title: {
-    fontFamily: 'Ubuntu-Medium',
     fontSize: ms(23),
     color: '#212121',
     textAlign: 'Justify',
     marginBottom: vs(10),
+    fontWeight: 'normal',
   },
   subtitle: {
-    fontFamily: 'Ubuntu-Light',
+    fontWeight: 'normal',
     fontSize: ms(16),
     color: '#000000ff',
     textAlign: 'Justify',
@@ -154,13 +153,13 @@ const styles = StyleSheet.create({
     height: s(45),
   },
   cardTitle: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: ms(15),
     color: '#333',
     marginBottom: vs(4),
   },
   cardSubtitle: {
-    fontFamily: 'Ubuntu-Light',
+    fontWeight: 'normal',
     fontSize: ms(13),
     color: '#000000ff',
   },
@@ -182,7 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#BDBDBD',
   },
   buttonText: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#FFFFFF',
     fontSize: ms(15),
   },

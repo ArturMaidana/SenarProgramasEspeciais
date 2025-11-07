@@ -43,27 +43,35 @@ const PieChart = ({ data, totalValue, size = 300 }) => {
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size}>
         <G x={center} y={center}>
-          {data.map((slice, index) => {
-            const sliceAngle = (slice.count / totalValue) * 360;
-            const endAngle = startAngle + sliceAngle;
-            const path = describeArc(
-              0,
-              0,
-              radius - strokeWidth / 2,
-              startAngle,
-              endAngle,
-            );
-            startAngle += sliceAngle;
-            return (
-              <Path
-                key={index}
-                d={path}
-                fill="none"
-                stroke={colorScale[index % colorScale.length]}
-                strokeWidth={strokeWidth}
-              />
-            );
-          })}
+          {data
+            .filter(slice => Number.isFinite(slice.count) && slice.count > 0)
+            .map((slice, index) => {
+              const safeTotal = totalValue > 0 ? totalValue : 1;
+              const sliceAngle = (slice.count / safeTotal) * 360;
+
+              // evita qualquer NaN ou valor absurdo
+              if (!Number.isFinite(sliceAngle) || sliceAngle <= 0) return null;
+
+              const endAngle = startAngle + sliceAngle;
+              const path = describeArc(
+                0,
+                0,
+                radius - strokeWidth / 2,
+                startAngle,
+                endAngle,
+              );
+              startAngle += sliceAngle;
+
+              return (
+                <Path
+                  key={index}
+                  d={path}
+                  fill="none"
+                  stroke={colorScale[index % colorScale.length]}
+                  strokeWidth={strokeWidth}
+                />
+              );
+            })}
         </G>
       </Svg>
       <View style={styles.labelContainer}>

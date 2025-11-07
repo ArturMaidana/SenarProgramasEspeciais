@@ -74,7 +74,7 @@ const MonthCarousel = ({
 
       <View style={styles.monthsWrapper}>
         {getVisibleMonths().map((month, index) => {
-          const isActive = index === 2; // O mês do meio é o ativo
+          const isActive = index === 2;
           return (
             <TouchableOpacity
               key={`${month.name}-${index}`}

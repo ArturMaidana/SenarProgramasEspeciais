@@ -51,7 +51,7 @@ export default function CreateService() {
 
   const [actionServiceValues, setActionServiceValues] = useState(
     actionServices.reduce((acc, item) => {
-      acc[item.id] = item.mandatory_value === '1' ? false : ''; // Checkbox = false, TextInput = ""
+      acc[item.id] = item.mandatory_value === '1' ? false : '';
       return acc;
     }, {}),
   );
@@ -216,7 +216,6 @@ export default function CreateService() {
         <View style={styles.formContainer}>
           <Text style={styles.sectionTitle}>HISTÓRICO MÉDICO</Text>
 
-          {/* Possui Alergias */}
           <View style={styles.checkboxRow}>
             <TouchableOpacity
               onPress={() => setAlergiasChecked(!alergiasChecked)}
@@ -241,7 +240,6 @@ export default function CreateService() {
             multiline
           />
 
-          {/* Medicamentos em uso */}
           <View style={styles.checkboxRow}>
             <TouchableOpacity
               onPress={() => setMedicamentosChecked(!medicamentosChecked)}
@@ -266,7 +264,6 @@ export default function CreateService() {
             multiline
           />
 
-          {/* Condições Médicas */}
           <View style={styles.checkboxRow}>
             <TouchableOpacity
               onPress={() => setCondicoesChecked(!condicoesChecked)}
@@ -428,13 +425,13 @@ export default function CreateService() {
         title="Dados do Participante"
         iconColor="#2e2e2eff"
         titleColor="#535353ff"
-        onNavigate={() => navigation.goBack()} // Corrigi para navegação
+        onNavigate={() => navigation.goBack()}
       />
       <KeyboardAwareScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 40 }}
         enableOnAndroid={true}
-        extraScrollHeight={80} // empurra a tela para cima quando abre o teclado
+        extraScrollHeight={80}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -558,8 +555,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   specialistTextContainer: {
-    flex: 1, // Faz o texto ocupar o espaço restante
-    marginLeft: 5, // Espaço entre o switch e o texto
+    flex: 1,
+    marginLeft: 5,
   },
   specialistText: {
     fontSize: 16,

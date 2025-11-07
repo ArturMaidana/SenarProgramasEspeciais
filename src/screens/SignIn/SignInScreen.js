@@ -13,17 +13,19 @@ import {
   Text,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { UserContext } from '../../contexts/UserContext';
+import { useNavigation } from '@react-navigation/native';
 
 import LogoSenar2 from '../../assets/LogoSenar2.svg';
 import NomeSenar from '../../assets/NameApp.svg';
 import Famato from '../../assets/Famato.svg';
-import { s, vs, ms } from 'react-native-size-matters';
-import { EmailIcon, LockIcon } from '../../components/Icons/Icons';
-import { UserContext } from '../../contexts/UserContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-
-import Api from '../../Api';
+import { ms } from 'react-native-size-matters';
+import {
+  EmailIcon,
+  LockIcon,
+  EyeIcon,
+  EyeOffIcon,
+} from '../../components/Icons/Icons';
 
 const { height } = Dimensions.get('window');
 
@@ -31,6 +33,7 @@ export default function SignInScreen() {
   const { signIn, loadingAuth } = useContext(UserContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
   const logoContainerY = useRef(new Animated.Value(0)).current;
@@ -105,6 +108,10 @@ export default function SignInScreen() {
     return result;
   };
 
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <View style={styles.container}>
       <Animated.View
@@ -135,7 +142,7 @@ export default function SignInScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             enableOnAndroid={true}
-            extraScrollHeight={ms(20)} // Um pequeno ajuste extra de altura se necessário
+            extraScrollHeight={ms(20)}
           >
             <View style={styles.formContent}>
               <Text style={styles.title}>Seja Bem-vindo!</Text>
@@ -164,10 +171,20 @@ export default function SignInScreen() {
                   style={styles.input}
                   placeholder=" Digite sua senha"
                   placeholderTextColor="#aaa"
-                  secureTextEntry={true}
+                  secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
                 />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={toggleShowPassword}
+                >
+                  {showPassword ? (
+                    <EyeOffIcon width={20} height={20} />
+                  ) : (
+                    <EyeIcon width={20} height={20} />
+                  )}
+                </TouchableOpacity>
               </View>
 
               <TouchableOpacity
@@ -224,7 +241,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: ms(14),
     color: '#333',
     marginBottom: ms(5),
@@ -241,32 +258,36 @@ const styles = StyleSheet.create({
     marginBottom: ms(15),
     backgroundColor: '#fffffff9',
   },
-
   input: {
-    fontFamily: 'Ubuntu-Light',
+    fontWeight: 'normal',
     flex: 1,
     height: ms(45),
     fontSize: ms(14),
     color: '#333',
     paddingLeft: ms(10),
+    paddingRight: ms(10),
+  },
+  eyeButton: {
+    padding: ms(5),
+    marginLeft: ms(5),
   },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
   },
   forgotPasswordText: {
     color: '#333',
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: ms(14),
     marginTop: ms(10),
   },
   title: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: ms(18),
     marginBottom: ms(5),
     textAlign: 'center',
   },
   text: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: ms(14),
     marginBottom: ms(40),
     color: '#3d3d3dff',
@@ -287,7 +308,7 @@ const styles = StyleSheet.create({
     marginBottom: ms(40),
   },
   buttonText: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     color: '#FFF',
     fontSize: ms(15),
   },

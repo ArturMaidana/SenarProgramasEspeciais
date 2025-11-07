@@ -20,7 +20,7 @@ import { formatPhoneNumber } from '../../utils/formatInput';
 import api from '../../services/endpont';
 import { validarCampos, validarHistorico } from '../../utils/valideInput';
 import { ALERT_TYPE, Dialog } from 'react-native-alert-notification';
-import { ms } from 'react-native-size-matters'; // Importando o size-matters
+import { ms } from 'react-native-size-matters';
 import {
   SearchIcon,
   BackPage,
@@ -29,7 +29,6 @@ import {
   CheckboxFill,
 } from '../../components/Icons/Icons';
 
-import { FormHeader } from '../../components/FormHeader';
 import Toolbar from '../../components/ui/Toolbar';
 
 const RegisterService = () => {
@@ -102,7 +101,6 @@ const RegisterService = () => {
       '/' +
       tempDate.getFullYear();
     setTextDateInicial(fDate);
-    // Atualiza o campo de data de nascimento formatado, se necessário
     setDataNascimento(fDate);
   };
 
@@ -206,7 +204,6 @@ const RegisterService = () => {
   }
 
   useEffect(() => {
-    // Usando o estilo de header do protótipo original, pois os exemplos não definem um header
     setHeaderOptions(navigation, {
       headerTitle: 'Novo Atendimento',
       headerTitleStyle: { fontFamily: 'Arial', fontSize: 14, color: '#FFF' },
@@ -284,8 +281,8 @@ const RegisterService = () => {
         setPrioritieId(json.data.prioritie_id);
         setServices(json.data.services);
         setIsValidCpf(true);
-        setIsInputEnabled(true); // Habilita campos se CPF for encontrado/novo
-        setIsVisibleDate(true); // Habilita o seletor de data se for um novo cadastro
+        setIsInputEnabled(true);
+        setIsVisibleDate(true);
         console.log(json.data);
 
         if (json.data.services.length == 0) {
@@ -316,7 +313,6 @@ const RegisterService = () => {
     setIsStore(false);
   };
 
-  // Estilos do RNPickerSelect baseados nos exemplos
   const pickerSelectStyles = {
     inputIOS: {
       ...styles.pickerText,
@@ -327,7 +323,7 @@ const RegisterService = () => {
       ...styles.pickerText,
       height: ms(45),
       paddingHorizontal: ms(15),
-      color: '#333', // Cor do texto no Android
+      color: '#333',
     },
     placeholder: {
       ...styles.placeholderPicker,
@@ -347,7 +343,7 @@ const RegisterService = () => {
               title="Dados do Participante"
               iconColor="#2e2e2eff"
               titleColor="#535353ff"
-              onNavigate={() => navigation.goBack()} // Corrigi para navegação
+              onNavigate={() => navigation.goBack()}
             />
           </View>
           <View style={styles.inputGroup}>
@@ -413,12 +409,11 @@ const RegisterService = () => {
                     style={[
                       dataNascimento ? styles.dateText : styles.datePlaceholder,
                       {
-                        // Ajuste fino para alinhamento vertical
                         paddingVertical: ms(12),
                       },
                     ]}
-                    numberOfLines={1} // Garante uma única linha
-                    ellipsizeMode="tail" // Adiciona "..." se o texto for muito longo
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
                   >
                     {dataNascimento ? dataNascimento : 'DD/MM/AAAA'}
                   </Text>
@@ -426,7 +421,6 @@ const RegisterService = () => {
               )}
             </View>
             <View style={styles.flexHalf}>
-              {/* Campo Sexo permanece igual */}
               <Text style={styles.label}>Sexo</Text>
               <View style={styles.pickerContainer}>
                 <RNPickerSelect
@@ -559,7 +553,7 @@ const RegisterService = () => {
             title="Dados do Participante"
             iconColor="#2e2e2eff"
             titleColor="#535353ff"
-            onNavigate={() => navigation.goBack()} // Corrigi para navegação
+            onNavigate={() => navigation.goBack()}
           />
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Nome do Participante</Text>
@@ -733,7 +727,7 @@ const RegisterService = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffffff', // Cor de fundo neutra
+    backgroundColor: '#ffffffff',
   },
   formContainer: {
     padding: ms(20),
@@ -745,12 +739,12 @@ const styles = StyleSheet.create({
     fontSize: ms(13),
     color: '#333',
     marginBottom: ms(8),
-    fontWeight: '600', // Fonte dos exemplos
+    fontWeight: '600',
   },
   placeholderPicker: {
     fontSize: ms(13),
     color: '#999',
-    fontFamily: 'Ubuntu-Regular', // Fonte dos exemplos
+    fontWeight: 'normal',
   },
   input: {
     borderWidth: ms(1),
@@ -760,11 +754,11 @@ const styles = StyleSheet.create({
     fontSize: ms(13),
     height: ms(45),
     backgroundColor: '#fff',
-    fontFamily: 'Ubuntu-Regular', // Fonte dos exemplos
+    fontWeight: 'normal',
     color: '#333',
   },
   readOnlyInput: {
-    backgroundColor: '#f4f4f4', // Fundo cinza para campos somente leitura
+    backgroundColor: '#f4f4f4',
     color: '#666',
   },
   cpfContainer: {
@@ -779,24 +773,24 @@ const styles = StyleSheet.create({
     fontSize: ms(13),
     height: ms(45),
     backgroundColor: '#fff',
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#333',
-    justifyContent: 'center', // Centraliza o texto verticalmente
+    justifyContent: 'center',
   },
   dateText: {
     fontSize: ms(12),
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#333',
-    lineHeight: ms(16), // Controla o espaçamento entre linhas
+    lineHeight: ms(16),
   },
   datePlaceholder: {
     fontSize: ms(12),
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#999',
     lineHeight: ms(16),
   },
   toolbarContainer: {
-    marginLeft: -ms(12), // Compensa o padding do formContainer
+    marginLeft: -ms(12),
     marginRight: -ms(20),
     marginTop: -ms(20),
     marginBottom: ms(10),
@@ -811,11 +805,11 @@ const styles = StyleSheet.create({
     fontSize: ms(13),
     height: ms(45),
     backgroundColor: '#fff',
-    fontFamily: 'Ubuntu-Regular', // Fonte dos exemplos
+    fontWeight: 'normal',
     color: '#333',
   },
   consultarButton: {
-    backgroundColor: '#00A859', // Cor do botão dos exemplos
+    backgroundColor: '#00A859',
     height: ms(45),
     borderRadius: ms(8),
     justifyContent: 'center',
@@ -829,18 +823,18 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontFamily: 'Ubuntu-Regular', // Fonte dos exemplos
+    fontWeight: 'normal',
     fontSize: ms(14),
     marginLeft: ms(8),
   },
   buttonTextPrimary: {
     color: 'white',
-    fontFamily: 'Ubuntu-Regular', // Fonte dos exemplos
+    fontWeight: 'normal',
     fontSize: ms(15),
   },
   toolbar: {
-    paddingLeft: 0, // Remove padding à esquerda
-    marginLeft: 0, // Remove margem à esquerda
+    paddingLeft: 0,
+    marginLeft: 0,
   },
   row: {
     flexDirection: 'row',
@@ -860,9 +854,9 @@ const styles = StyleSheet.create({
   },
   pickerText: {
     color: '#333',
-    fontFamily: 'Ubuntu-Regular', // Fonte dos exemplos
+    fontWeight: 'normal',
     fontSize: ms(12),
-    paddingHorizontal: ms(2), // Adicionado para alinhar com o input
+    paddingHorizontal: ms(2),
   },
   primaryButton: {
     flex: ms(1),
@@ -886,7 +880,7 @@ const styles = StyleSheet.create({
   },
   previousButtonText: {
     color: '#333',
-    fontFamily: 'Ubuntu-Regular', // Fonte dos exemplos
+    fontWeight: 'normal',
     fontSize: ms(16),
   },
   buttonContainer: {
@@ -897,7 +891,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: ms(14),
-    fontFamily: 'Ubuntu-Bold', // Fonte dos exemplos
+    fontWeight: 'normal',
     color: '#333',
     marginBottom: ms(10),
     marginTop: ms(10),
@@ -918,12 +912,12 @@ const styles = StyleSheet.create({
   },
   serviceTitle: {
     fontSize: ms(14),
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#333',
   },
   serviceSubtitle: {
     fontSize: ms(12),
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#666',
   },
   checkboxContainer: {
@@ -934,7 +928,7 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: ms(14),
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#333',
     marginLeft: ms(8),
   },
@@ -946,7 +940,7 @@ const styles = StyleSheet.create({
     fontSize: ms(13),
     minHeight: ms(80),
     textAlignVertical: 'top',
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     backgroundColor: '#fff',
     color: '#333',
     marginBottom: ms(10),

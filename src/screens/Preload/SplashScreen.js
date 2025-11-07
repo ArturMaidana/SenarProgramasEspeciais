@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useContext } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 
 import LogoSenar2 from '../../assets/LogoSenar2.svg';

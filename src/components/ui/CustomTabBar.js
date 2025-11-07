@@ -1,15 +1,11 @@
 import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 
-import {
-  HomeIcon,
-  DashboardIcon,
-  ProfileIcon,
-} from '../components/Icons/Icons';
+import { HomeIcon, DashboardIcon, ProfileIcon } from '../Icons/Icons';
 
 const iconConfig = {
   Home: HomeIcon,
-  RunningToday: DashboardIcon,
+  AttedanceToday: DashboardIcon,
   Profile: ProfileIcon,
 };
 
@@ -57,14 +53,14 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 25,
-    left: 20, // Ajustei para ficar mais responsivo
+    left: 20,
     right: 20,
     alignItems: 'center',
   },
   tabBar: {
     flexDirection: 'row',
     height: 75,
-    width: '75%', // Adicionado para ocupar o espaço definido em container
+    width: '75%',
     backgroundColor: '#00A859',
     borderRadius: 43,
     alignItems: 'center',
@@ -77,7 +73,7 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     flex: 1,
-    height: '100%', // Garante que a área de toque ocupe toda a altura
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },

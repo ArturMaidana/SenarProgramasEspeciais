@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, StyleSheet, Text, ScrollView } from 'react-native';
-import RunningCard from '../../components/RunningCard';
-import api from './../../services/endpont';
+import TodayCard from '../../components/ui/TodayCard';
+import api from '../../services/endpont';
 import Loading from '../../components/ui/Loading';
 import { formatDate } from '../../utils/dateFormat';
 import { dataAtual } from '../../utils/date';
@@ -16,11 +16,11 @@ export default function AttendanceToday({ navigation }) {
   const handleCardPress = event => {
     navigation.navigate('Atendimentos', {
       eventId: event.id,
-      dateEvent: event.started_at, // ou outro campo: event.date, event.startedAt...
+      dateEvent: event.started_at,
     });
   };
 
-  const dateNow = dataAtual(); // mesmo usado na Home
+  const dateNow = dataAtual();
 
   const loadTodayEvents = useCallback(async () => {
     try {
@@ -28,7 +28,6 @@ export default function AttendanceToday({ navigation }) {
 
       const events = response.data || [];
 
-      // Só “Em execução”
       const executing = events.filter(ev => ev.status === 'Em execução');
 
       setRunningEvents(executing);
@@ -69,11 +68,10 @@ export default function AttendanceToday({ navigation }) {
           )}
 
           {runningEvents.map(event => {
-            // ✅ AGORA SIM: o event existe, aqui é seguro acessar event.city etc.
             const textoDescricao = `Aviso aos cidadãos de ${event.city}: Vai acontecer um mutirão rural, aproveite a oportunidade para regularizar sua situação; fique atento à data!`;
 
             return (
-              <RunningCard
+              <TodayCard
                 key={event.id}
                 tagText="Mutirão Rural"
                 idText={`${event.city} - ${formatDate(event.started_at)}`}
@@ -99,7 +97,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: ms(19),
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     color: '#333',
   },
   scrollcontainer: {
@@ -107,7 +105,7 @@ const styles = StyleSheet.create({
     marginTop: vs(10),
   },
   emptyText: {
-    fontFamily: 'Ubuntu',
+    fontWeight: 'normal',
     fontSize: 14,
     color: '#555',
   },

@@ -17,7 +17,7 @@ import {
   CheckIconFilter,
   CancelIcon,
   SearchIcon,
-} from './Icons/Icons';
+} from '../Icons/Icons';
 
 const FilterModal = ({
   visible,

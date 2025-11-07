@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import Modal from 'react-native-modal'; // 1. Importado da biblioteca!
+import Modal from 'react-native-modal';
 import { s, vs, ms } from 'react-native-size-matters';
 
 const NotificationModal = ({ visible, onClose, notifications }) => {

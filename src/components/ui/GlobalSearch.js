@@ -18,10 +18,10 @@ export default function GlobalSearchBar({ navigation }) {
     { title: 'Mutirões', screen: 'Mutirao' },
     { title: 'Meus Atendimentos', screen: 'Atendimentos' },
     { title: 'Relatórios', screen: 'Relatorio' },
-    { title: 'Perfil', screen: 'Profile' }, // coloque o nome da sua tela de perfil
+    { title: 'Perfil', screen: 'Profile' },
     { title: 'Serviços', screen: 'ServiceDetails' },
     { title: 'Novo Atendimento', screen: 'NewFormulario' },
-    { title: 'Home', screen: 'MainTabs' },
+    { title: 'Home', screen: 'TabNavigator' },
   ];
 
   const handleSearch = text => {

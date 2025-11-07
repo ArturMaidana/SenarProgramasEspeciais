@@ -15,7 +15,6 @@ import {
   useNavigation,
   useFocusEffect,
 } from '@react-navigation/native';
-import FilterPanel from '../../components/ui/FilterPanel';
 
 import { useRoute } from '@react-navigation/native';
 import Toolbar from '../../components/ui/Toolbar';
@@ -23,7 +22,7 @@ import api from './../../services/endpont';
 import { formatFone } from '../../utils/formatInput';
 import Loading from '../../components/ui/Loading';
 import { ALERT_TYPE, Dialog } from 'react-native-alert-notification';
-import SearchBarWithFilters from '../../components/SearchBarWithFilters';
+import SearchBarWithFilters from '../../components/ui/SearchBarWithFilters';
 
 import {
   ArrowDownIcon,
@@ -63,7 +62,8 @@ export default function Service() {
   const route = useRoute();
   const isFirstRender = useRef(true);
 
-  const { eventId, dateEvent } = route.params || {};
+  const { eventId, dateEvent, status } = route.params || {};
+  const eventoJaOcorreu = new Date(dateEvent) < new Date();
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [searchValue, setSearchValue] = useState('');
   const [isSectionVisible, setSectionVisible] = useState([]);
@@ -100,6 +100,8 @@ export default function Service() {
 
   const isFocused = useIsFocused();
   const intervalRef = useRef(null);
+
+  const podeGerarRelatorio = status === 'Fechamento';
 
   useEffect(() => {
     if (educationalEvents.length > 0 && isSectionVisible.length === 0) {
@@ -228,7 +230,6 @@ export default function Service() {
     const situationIds = selectedSituations.map(s => statusToId[s]);
 
     try {
-      // mantém a mesma estrutura da sua API antiga (3 parâmetros)
       const services = await api.patchEventsServices(
         eventId,
         searchName,
@@ -564,6 +565,14 @@ export default function Service() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+      {podeGerarRelatorio && (
+        <TouchableOpacity
+          style={styles.reportBtn}
+          onPress={() => navigation.navigate('Relatorio', { eventId })}
+        >
+          <Text style={styles.reportBtnText}>Gerar Relatório</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -584,6 +593,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
+  },
+  reportBtn: {
+    backgroundColor: '#009B53',
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginHorizontal: 80,
+    marginBottom: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+  },
+  reportBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   categoryHeader: {
     flexDirection: 'row',
@@ -613,12 +637,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   categoryTitle: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: 14,
     color: '#333',
   },
   categoryCount: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: 13,
     color: '#00A859',
   },
@@ -646,7 +670,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   itemName: {
-    fontFamily: 'Ubuntu-Medium',
+    fontWeight: 'normal',
     color: '#343A40',
     flex: 1,
   },
@@ -657,13 +681,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemLabel: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: 12,
     color: '#424242ff',
     marginBottom: 4,
   },
   itemValue: {
-    fontFamily: 'Ubuntu',
     fontWeight: '400',
     color: '#3f3f3fff',
   },
@@ -685,7 +708,6 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 14,
-    fontFamily: 'Ubuntu',
     fontWeight: '500',
     color: '#454652',
     textAlign: 'center',
@@ -731,14 +753,14 @@ const styles = StyleSheet.create({
   },
 
   modalTitle: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: 20,
     color: '#333',
     marginBottom: 16,
   },
 
   actionsTitle: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: 14,
     color: '#495057',
     marginBottom: 12,
@@ -755,7 +777,7 @@ const styles = StyleSheet.create({
   },
 
   actionButtonText: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: 14,
     marginLeft: 10,
   },

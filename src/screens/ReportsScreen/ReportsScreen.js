@@ -7,19 +7,18 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { s, vs, ms } from 'react-native-size-matters';
-import PieChart from '../../components/PieChart';
+import PieChart from '../../components/ui/PieChart';
 import api from '../../services/endpont';
 import { useRoute } from '@react-navigation/native';
 
 import {
-  OutlineCalendarToday,
-  LocationPin,
-  UsersGroup,
   BaselineElectricBolt,
   BaselineCallMissedOutgoing,
-  OutlineFileDownload,
-  BackPage,
+  CalendarFill,
+  MapPin,
+  PeopleFilled,
 } from '../../components/Icons/Icons';
+import Toolbar from '../../components/ui/Toolbar';
 
 const ReportCard = ({ title, icon, children }) => (
   <View style={styles.cardContainer}>
@@ -33,56 +32,105 @@ const ReportCard = ({ title, icon, children }) => (
 
 export default function ReportScreen({ navigation }) {
   const route = useRoute();
-  const { eventId } = route.params; // ✅ ID do mutirão selecionado
+  const { eventId } = route.params || {};
 
   const [report, setReport] = useState(null);
 
   useEffect(() => {
     async function loadReport() {
       try {
-        const response = await api.getShowEvent(eventId);
-        const data = response?.data;
+        const response = await api.patchEventsServices(eventId, '', []);
+        console.log('🔍 Dados completos do serviço clicado:', response.data);
 
-        if (!data) {
-          console.log('❌ Nenhum dado retornado da API');
-          return;
+        const data = response.data;
+        const categoriesRaw = data.eventServices || [];
+
+        const firstEvent = data.eventServices?.[0];
+
+        function extractLocation(eventName) {
+          if (!eventName) return 'Local não informado';
+
+          const parts = eventName.split(':');
+          return parts.length > 1 ? parts[1].trim() : 'Local não informado';
         }
 
-        const event = data.event || {};
-        const categories = data.services_category || [];
+        const location = extractLocation(firstEvent?.event_name);
 
-        const title = event.name || 'Evento';
-        const date = new Date(event.started_at).toLocaleDateString('pt-BR');
-        const location = `${event.city || 'Cidade não informada'}, MT`;
+        const rawDate = firstEvent?.date;
 
-        // ✅ total geral
-        const total = categories.reduce(
-          (acc, c) => acc + (c.participants?.length || 0),
-          0,
-        );
+        const formattedDate = rawDate
+          ? new Date(rawDate).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            })
+          : '--/--/----';
 
-        // ✅ distribuição por categoria
-        const services = categories.map(c => {
-          const count = c.participants?.length || 0;
-          const pct =
-            total > 0 ? Number(((count / total) * 100).toFixed(1)) : 0;
+        const CATEGORIES_ORDER = [
+          'OFTALMOLOGIA',
+          'ODONTOLOGIA',
+          'ENFERMAGEM',
+          'CORTE DE CABELO',
+          'MAQUIAGEM',
+          'ENTREGA DE ÓCULOS',
+        ];
 
-          return {
-            name: c.name,
-            count,
-            percentage: pct,
-          };
+        const normalize = (name = '') => {
+          const n = name.toString().trim().toUpperCase();
+
+          if (n.includes('OFTAL')) return 'OFTALMOLOGIA';
+          if (n.includes('ODONTO')) return 'ODONTOLOGIA';
+          if (n.includes('ENFER')) return 'ENFERMAGEM';
+          if (n.includes('CORTE') || n.includes('CABELO'))
+            return 'CORTE DE CABELO';
+          if (n.includes('MAQUI')) return 'MAQUIAGEM';
+          if (n.includes('OCULO') || n.includes('ÓCULO'))
+            return 'ENTREGA DE ÓCULOS';
+
+          return null;
+        };
+
+        const categoryMap = {};
+
+        categoriesRaw.forEach(cat => {
+          categoriesRaw.forEach(cat => {
+            console.log('🟩 Serviço:', cat.name);
+            console.log('🟦 Lista completa de participants:', cat.participants);
+          });
+
+          const nameKey = normalize(cat.name);
+          if (!nameKey) return;
+
+          let count = Array.isArray(cat.participants)
+            ? cat.participants.length
+            : 0;
+
+          categoryMap[nameKey] = count;
         });
+
+        const services = CATEGORIES_ORDER.map(catName => ({
+          name: catName,
+          count: categoryMap[catName] || 0,
+        }));
+
+        const total = services.reduce((acc, c) => acc + c.count, 0);
+
+        const servicesWithPct = services.map(s => ({
+          ...s,
+          percentage: total > 0 ? ((s.count / total) * 100).toFixed(1) : 0,
+        }));
 
         setReport({
-          title,
-          date,
-          location,
+          title: firstEvent?.event_name || 'Mutirão Rural',
+
+          date: formattedDate,
+          location: location,
+
           totalAttendees: total,
-          services,
+          services: servicesWithPct,
         });
       } catch (err) {
-        console.log('Erro ao carregar relatório:', err);
+        console.log('Erro relatório:', err);
       }
     }
 
@@ -98,45 +146,41 @@ export default function ReportScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <BackPage color="#212121" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Relatório de Atendimentos</Text>
-      </View>
+      <Toolbar
+        title="Relatório de Atendimentos"
+        iconColor="#2e2e2eff"
+        titleColor="#535353ff"
+        onNavigate={() => navigation.goBack()}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* CARD PRINCIPAL */}
         <View style={styles.cardContainer}>
-          <Text style={styles.statsTitle}>Estatísticas Médicas</Text>
-          <Text style={styles.statsSubtitle}>{report.title}</Text>
+          <Text style={styles.statsTitle}>Estatísticas Mutirão Rural</Text>
 
           <View style={styles.statsRow}>
-            <OutlineCalendarToday color="#757575" />
+            <CalendarFill color="#00A859" />
             <Text style={styles.statsText}>{report.date}</Text>
           </View>
 
           <View style={styles.statsRow}>
-            <LocationPin color="#757575" />
+            <MapPin color="#00A859" />
             <Text style={styles.statsText}>{report.location}</Text>
           </View>
 
           <View style={styles.statsRow}>
-            <UsersGroup color="#757575" />
+            <PeopleFilled color="#00A859" />
             <Text style={styles.statsText}>
               {report.totalAttendees} atendimentos
             </Text>
           </View>
         </View>
 
-        {/* GRÁFICO */}
         <ReportCard
           title="Distribuição de Atendimentos"
-          icon={<BaselineElectricBolt color="#333" />}
+          icon={<BaselineElectricBolt color="#00A859" />}
         >
           <View style={styles.chartWrapper}>
             <PieChart
@@ -147,18 +191,26 @@ export default function ReportScreen({ navigation }) {
           </View>
         </ReportCard>
 
-        {/* LISTA DE TIPOS */}
         <View style={styles.sectionHeader}>
           <BaselineCallMissedOutgoing
             width={s(22)}
             height={s(22)}
-            color="#212121"
+            color="#00A859"
           />
           <Text style={styles.cardTitle}>Tipos de Atendimento</Text>
         </View>
 
         {report.services.map(service => (
-          <TouchableOpacity key={service.name} style={styles.serviceCard}>
+          <TouchableOpacity
+            key={service.name}
+            style={styles.serviceCard}
+            onPress={() =>
+              navigation.navigate('ServiceDetails', {
+                serviceName: service.name,
+                eventId: eventId,
+              })
+            }
+          >
             <View>
               <Text style={styles.serviceName}>{service.name}</Text>
               <Text style={styles.servicePercentage}>
@@ -174,22 +226,31 @@ export default function ReportScreen({ navigation }) {
         ))}
       </ScrollView>
 
-      {/* BOTÃO PDF */}
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <TouchableOpacity style={styles.exportButton}>
           <OutlineFileDownload width={s(20)} height={s(20)} color="#FFFFFF" />
           <Text style={styles.exportButtonText}>Exportar PDF</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 }
 
-/* --- STYLES --- */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { fontFamily: 'Ubuntu-Regular', fontSize: 16, color: '#555' },
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontWeight: 'normal',
+    fontSize: 16,
+    color: '#555',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,7 +259,7 @@ const styles = StyleSheet.create({
     paddingBottom: vs(20),
   },
   headerTitle: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: ms(18),
     color: '#212121',
     marginLeft: s(15),
@@ -211,17 +272,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: ms(12),
     padding: s(15),
-    marginBottom: vs(15),
-    elevation: 2,
+    elevation: 4,
+    marginTop: 10,
   },
   statsTitle: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: '600',
     fontSize: ms(15),
     color: '#333',
     marginBottom: vs(4),
   },
   statsSubtitle: {
-    fontFamily: 'Ubuntu-Light',
+    fontWeight: 'normal',
     fontSize: ms(13),
     color: '#000',
     marginBottom: vs(12),
@@ -232,7 +293,7 @@ const styles = StyleSheet.create({
     marginBottom: vs(8),
   },
   statsText: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: ms(14),
     color: '#424242',
     marginLeft: s(10),
@@ -243,7 +304,7 @@ const styles = StyleSheet.create({
     marginBottom: vs(15),
   },
   cardTitle: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: '600',
     fontSize: ms(15),
     color: '#333',
     marginLeft: s(10),
@@ -256,8 +317,9 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: vs(15),
+    marginBottom: vs(10),
     marginLeft: s(5),
+    marginTop: 20,
   },
   serviceCard: {
     flexDirection: 'row',
@@ -270,24 +332,26 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   serviceName: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: '600',
     fontSize: ms(14),
     color: '#333',
   },
   servicePercentage: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: ms(13),
     color: '#757575',
     marginTop: vs(4),
   },
-  serviceCountContainer: { alignItems: 'flex-end' },
+  serviceCountContainer: {
+    alignItems: 'flex-end',
+  },
   serviceCount: {
-    fontFamily: 'Ubuntu-Bold',
-    fontSize: ms(14),
-    color: '#333',
+    fontWeight: 'bold',
+    fontSize: ms(16),
+    color: '#00A859',
   },
   serviceCountLabel: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: ms(13),
     color: '#757575',
   },
@@ -311,7 +375,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   exportButtonText: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: ms(14),
     color: '#FFFFFF',
     marginLeft: s(10),

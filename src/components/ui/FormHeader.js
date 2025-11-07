@@ -4,7 +4,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ms } from 'react-native-size-matters';
-import { BackPage } from './Icons/Icons';
+import { BackPage } from '../Icons/Icons';
 
 export default function FormHeader({ step, setStep, navigation }) {
   const insets = useSafeAreaInsets();

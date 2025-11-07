@@ -1,11 +1,11 @@
-// src/components/RunningCard.js
+// src/components/AttedanceToday.js
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { s, vs, ms } from 'react-native-size-matters';
-import { ArrowRightIcon, NotificationIcon } from './Icons/Icons';
+import { ArrowRightIcon, NotificationIcon } from '../Icons/Icons';
 
-export default function RunningCard({
+export default function TodayCard({
   tagText,
   idText,
   location,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontFamily: 'Ubuntu-Medium',
-    color: '#00A859',
+    color: '#005ca8ff',
     fontSize: ms(12),
     marginRight: ms(4),
   },

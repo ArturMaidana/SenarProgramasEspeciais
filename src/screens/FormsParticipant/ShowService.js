@@ -8,7 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  StyleSheet, // Importando StyleSheet
+  StyleSheet,
 } from 'react-native';
 import { Switch } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
@@ -61,7 +61,6 @@ export default function CreateService() {
     }, {}),
   );
 
-  // ... (Toda a lógica permanece inalterada) ...
   const handleCheckboxChange = id => {
     setActionServiceValues(prevState => ({
       ...prevState,
@@ -229,7 +228,6 @@ export default function CreateService() {
   }
 
   useEffect(() => {
-    // Ajustando o Header para BATER com o protótipo
     setHeaderOptions(navigation, {
       headerTitle: 'Dados do Participante',
       headerTitleStyle: {
@@ -237,19 +235,18 @@ export default function CreateService() {
         color: '#000',
         fontWeight: 'bold',
       },
-      headerTintColor: '#000', // Cor da seta de voltar
+      headerTintColor: '#000',
       headerStyle: {
-        backgroundColor: '#FFFFFF', // Fundo branco
-        elevation: 0, // Remove sombra no Android
-        shadowOpacity: 0, // Remove sombra no iOS
-        borderBottomWidth: 0, // Remove borda no iOS
+        backgroundColor: '#FFFFFF',
+        elevation: 0,
+        shadowOpacity: 0,
+        borderBottomWidth: 0,
       },
     });
     loadStorage();
     getEventParticipant();
   }, [navigation]);
 
-  // Estilos do RNPickerSelect (mantidos genéricos para se adaptar)
   const pickerSelectStyles = {
     inputIOS: {
       ...styles.input,
@@ -272,7 +269,6 @@ export default function CreateService() {
   const renderEtapa = () => {
     if (etapaAtual === 1) {
       return (
-        // Esta é a parte de baixo do protótipo
         <View style={styles.formContainer}>
           <Text style={styles.sectionTitle}>Histórico Médico</Text>
 
@@ -460,7 +456,7 @@ export default function CreateService() {
                 onValueChange={() =>
                   setIsSpecialistRequired(!isSpecialistRequired)
                 }
-                color="#37C064" // Cor verde do protótipo
+                color="#37C064"
               />
             </View>
           </View>
@@ -512,7 +508,7 @@ export default function CreateService() {
           title="Dados do Participante"
           iconColor="#2e2e2eff"
           titleColor="#535353ff"
-          onNavigate={() => navigation.goBack()} // Corrigi para navegação
+          onNavigate={() => navigation.goBack()}
         />
       </View>
       <KeyboardAwareScrollView
@@ -522,7 +518,6 @@ export default function CreateService() {
       >
         <LoadingInfo visible={loading} />
 
-        {/* Este componente CardParticipant RENDERIZA O TOPO DA IMAGEM */}
         <CardParticipant
           nameInstrutor={instrutor}
           cpf={cpf}
@@ -530,18 +525,16 @@ export default function CreateService() {
           dateNascimento={age}
           namePartipant={participant}
         />
-        {/* O renderEtapa() RENDERIZA A PARTE DE BAIXO (Histórico Médico) */}
         {renderEtapa()}
       </KeyboardAwareScrollView>
     </>
   );
 }
 
-// ESTILOS AJUSTADOS PARA BATER COM O PROTÓTIPO
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF', // Fundo branco como no protótipo
+    backgroundColor: '#FFFFFF',
   },
   formContainer: {
     padding: 20,
@@ -550,7 +543,6 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: 15,
   },
-  // Label para "Histórico Médico", "PROCEDIMENTOS", etc.
   sectionTitle: {
     fontSize: 14,
     fontWeight: 'bold',
@@ -558,7 +550,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginTop: 10,
   },
-  // Label para "Necessita de atuação...", "OBSERVAÇÕES", etc.
   label: {
     fontSize: 14,
     fontWeight: 'bold',
@@ -597,7 +588,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: '#37C064', // Cor verde exata do protótipo
+    backgroundColor: '#37C064',
     borderRadius: 8,
     height: 50,
     justifyContent: 'center',
@@ -608,7 +599,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E0E0E0', // Borda cinza clara
+    borderColor: '#E0E0E0',
     borderRadius: 8,
     height: 50,
     justifyContent: 'center',
@@ -621,7 +612,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   previousButtonText: {
-    color: '#666', // Texto cinza para botão secundário
+    color: '#666',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -655,8 +646,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   checkboxLabel: {
-    fontSize: 16, // Tamanho da fonte do protótipo
-    color: '#333', // Cor da fonte do protótipo
+    fontSize: 16,
+    color: '#333',
     marginLeft: 8,
     flex: 1,
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,7 +6,6 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -16,7 +15,9 @@ import TermsOfUseModal from '../../components/Moldals/TermsOfUseModal';
 import NotesUpdates from '../../components/Moldals/NotesUpdates';
 import LogoutModal from '../../components/Moldals/LogoutModal';
 import HelpModal from '../../components/Moldals/HelpModal';
-import { s, vs, ms } from 'react-native-size-matters';
+import { ms } from 'react-native-size-matters';
+
+import { UserContext } from '../../contexts/UserContext';
 
 import {
   ShieldCheckIcon,
@@ -24,12 +25,11 @@ import {
   QrCodeIcon,
   CheckBadgeIcon,
   LogoutIcon,
-  NotificationIcon,
   ArrowRightFilledIcon,
   BellIcon,
 } from '../../components/Icons/Icons';
 
-import CustomSwitch from '../../components/CustomSwitch';
+import CustomSwitch from '../../components/ui/CustomSwitch';
 
 const ProfileRow = ({
   iconName,
@@ -86,13 +86,14 @@ const ProfileRow = ({
 
 export default function ProfileScreen() {
   const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState(''); // Estado para o email
+  const [userEmail, setUserEmail] = useState('');
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [isQrModalVisible, setQrModalVisible] = useState(false);
   const [isTermsModalVisible, setTermsModalVisible] = useState(false);
   const [isNotesModalVisible, setNotesModalVisible] = useState(false);
   const [isLogoutModalVisible, setLogoutModalVisible] = useState(false);
   const [isHelpModalVisible, setHelpModalVisible] = useState(false);
+  const { logoff } = useContext(UserContext);
 
   const navigation = useNavigation();
 
@@ -109,17 +110,14 @@ export default function ProfileScreen() {
 
   async function loadStorage() {
     try {
-      // Busca o nome do usuário
       const storageUser = await AsyncStorage.getItem('@atendeUser');
       const formattedName = formatUserName(storageUser);
       setUserName(formattedName);
 
-      // Busca o email do usuário - você precisa salvar isso no login
       const storageEmail = await AsyncStorage.getItem('@atendeEmail');
       if (storageEmail) {
         setUserEmail(storageEmail);
       } else {
-        // Se não encontrar no AsyncStorage, define um padrão ou busca da API
         setUserEmail('usuario@email.com');
         console.log('Email não encontrado no AsyncStorage');
       }
@@ -134,22 +132,8 @@ export default function ProfileScreen() {
     loadStorage();
   }, []);
 
-  const confirmLogout = async () => {
-    try {
-      await AsyncStorage.multiRemove([
-        'token',
-        '@atendeUser',
-        '@atendeUserEmail',
-      ]);
-      setLogoutModalVisible(false);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'SignIn' }],
-      });
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-      Alert.alert('Erro', 'Não foi possível sair da conta. Tente novamente.');
-    }
+  const confirmLogout = () => {
+    logoff();
   };
 
   return (
@@ -168,7 +152,6 @@ export default function ProfileScreen() {
               source={require('../../assets/AdminPhoto.png')}
             />
             <Text style={styles.userName}>{userName}</Text>
-            {/* <Text style={styles.userEmail}>{userEmail}</Text>{' '} */}
             <TouchableOpacity style={styles.editButton}>
               <Text style={styles.editButtonText}>Editar Perfil</Text>
             </TouchableOpacity>
@@ -292,13 +275,13 @@ const styles = StyleSheet.create({
     marginBottom: ms(12),
   },
   userName: {
-    fontFamily: 'Ubuntu-Bold',
+    fontWeight: 'normal',
     fontSize: ms(17),
     color: '#212121',
     paddingBottom: 8,
   },
   userEmail: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     fontSize: ms(13),
     color: '#757575',
     marginBottom: ms(12),
@@ -310,7 +293,7 @@ const styles = StyleSheet.create({
     borderRadius: ms(20),
   },
   editButtonText: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#FFFFFF',
     fontSize: ms(12),
   },
@@ -318,7 +301,7 @@ const styles = StyleSheet.create({
     marginBottom: ms(5),
   },
   sectionTitle: {
-    fontFamily: 'Ubuntu-Medium',
+    fontWeight: 'normal',
     fontSize: ms(13),
     color: '#757575',
     marginBottom: ms(5),
@@ -334,7 +317,7 @@ const styles = StyleSheet.create({
     marginRight: ms(18),
   },
   rowText: {
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     flex: 1,
     fontSize: ms(13),
   },
@@ -345,7 +328,7 @@ const styles = StyleSheet.create({
   pickerText: {
     marginRight: ms(4),
     fontSize: ms(13),
-    fontFamily: 'Ubuntu-Regular',
+    fontWeight: 'normal',
     color: '#757575',
   },
   separator: {

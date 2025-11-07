@@ -32,7 +32,7 @@ export default ({ children }) => {
               '@atendeUser',
               response.data.data.user.name,
             );
-            navigation.reset({ routes: [{ name: 'MainTabs' }] });
+            navigation.reset({ routes: [{ name: 'TabNavigator' }] });
           } else {
             navigation.reset({ routes: [{ name: 'SignIn' }] });
           }
@@ -87,10 +87,18 @@ export default ({ children }) => {
   }
 
   async function logoff() {
-    setUser(null);
-    const accessToken = '';
-    await AsyncStorage.setItem('@atendeToken', accessToken);
-    await loadStorage();
+    try {
+      await AsyncStorage.removeItem('@atendeToken'); // ✅ remove de verdade
+      await AsyncStorage.removeItem('@atendeUser'); // opcional
+      setUser(null); // ✅ limpa contexto
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'SignIn' }],
+      });
+    } catch (e) {
+      console.log('Erro no logout:', e);
+    }
   }
 
   return (

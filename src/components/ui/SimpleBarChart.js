@@ -8,17 +8,14 @@ const SimpleBarChart = ({ data, height, barWidth, spacing, barColor }) => {
     return null;
   }
 
-  // Encontra o valor máximo para escalar as barras proporcionalmente
   const maxValue = Math.max(...data.map(item => item.value));
 
-  // Calcula a largura total do container do SVG
   const chartWidth = data.length * (barWidth + spacing) - spacing;
 
   return (
     <View style={styles.container}>
       <Svg width={chartWidth} height={height}>
         {data.map((item, index) => {
-          // Garante que a altura da barra seja 0 se o valor for 0
           const barHeight = maxValue > 0 ? (item.value / maxValue) * height : 0;
           const x = index * (barWidth + spacing);
           const y = height - barHeight;
@@ -31,12 +28,11 @@ const SimpleBarChart = ({ data, height, barWidth, spacing, barColor }) => {
               width={barWidth}
               height={barHeight}
               fill={barColor}
-              rx={ms(4)} // Bordas arredondadas no topo
+              rx={ms(4)}
             />
           );
         })}
       </Svg>
-      {/* Rótulos abaixo do gráfico */}
       <View style={[styles.labelsContainer, { width: chartWidth }]}>
         {data.map((item, index) => (
           <Text key={index} style={[styles.label, { width: barWidth }]}>

@@ -110,7 +110,6 @@ export default function NewPasswordStep(props) {
   );
 }
 
-// Os estilos permanecem os mesmos
 const styles = StyleSheet.create({
   title: {
     fontSize: ms(20),
@@ -146,15 +145,25 @@ const styles = StyleSheet.create({
     fontSize: ms(16),
     color: '#111827',
   },
-  eyeIcon: { padding: ms(10) },
-  criteriaContainer: { marginBottom: ms(24) },
+  eyeIcon: {
+    padding: ms(10),
+  },
+  criteriaContainer: {
+    marginBottom: ms(24),
+  },
   criteriaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: ms(8),
   },
-  criteriaText: { marginLeft: ms(8), fontSize: ms(14), color: '#6B7280' },
-  criteriaTextValid: { color: '#10B981' },
+  criteriaText: {
+    marginLeft: ms(8),
+    fontSize: ms(14),
+    color: '#6B7280',
+  },
+  criteriaTextValid: {
+    color: '#10B981',
+  },
   button: {
     backgroundColor: '#00A859',
     borderRadius: ms(10),

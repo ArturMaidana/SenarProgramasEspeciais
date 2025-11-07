@@ -142,7 +142,6 @@ const styles = StyleSheet.create({
   },
   eventosText: {
     color: '#454652',
-    fontFamily: 'Ubuntu',
     fontSize: 13,
     fontStyle: 'normal',
     fontWeight: '700',
@@ -150,7 +149,6 @@ const styles = StyleSheet.create({
   },
   programadosText: {
     color: '#7C7A80',
-    fontFamily: 'Ubuntu',
     fontSize: 10,
     fontStyle: 'normal',
     fontWeight: '400',

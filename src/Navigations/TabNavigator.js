@@ -1,14 +1,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import CustomTabBar from '../components/CustomTabBar';
+import CustomTabBar from '../components/ui/CustomTabBar';
 import Home from '../screens/Home/HomeScreen';
-import RunningToday from '../screens/AttendanceToday/AttendanceScreen';
+import AttedanceToday from '../screens/Attendances/AttendanceToday';
 import Profile from '../screens/Profile/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-export default function MainTabs() {
+export default function TabNavigator() {
   return (
     <Tab.Navigator
       tabBar={props => <CustomTabBar {...props} />}
@@ -19,7 +19,7 @@ export default function MainTabs() {
       }}
     >
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="RunningToday" component={RunningToday} />
+      <Tab.Screen name="AttedanceToday" component={AttedanceToday} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );

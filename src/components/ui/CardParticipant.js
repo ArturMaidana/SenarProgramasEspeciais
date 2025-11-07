@@ -10,9 +10,6 @@ const CardParticipant = ({
 }) => {
   return (
     <View style={styles.formContainer}>
-      {/* O título "Dados do Participante" foi removido daqui,
-          pois ele já está sendo exibido no header da tela (conforme ajuste anterior). */}
-
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Responsável pelo atendimento</Text>
         <TextInput
@@ -77,30 +74,30 @@ const CardParticipant = ({
 
 const styles = StyleSheet.create({
   formContainer: {
-    paddingHorizontal: 20, // Padding lateral
-    paddingTop: 10, // Padding no topo (logo abaixo do header)
-    backgroundColor: '#FFFFFF', // Fundo branco
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: '#FFFFFF',
   },
   inputContainer: {
-    marginBottom: 10, // Espaço entre os campos
-    flex: 1, // Necessário para os campos em linha (Sexo/Data)
+    marginBottom: 10,
+    flex: 1,
   },
   label: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#666', // Cor cinza do protótipo
+    color: '#666',
     marginBottom: 4,
-    textTransform: 'uppercase', // CAIXA ALTA como no protótipo
+    textTransform: 'uppercase',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E0E0E0', // Borda cinza clara
+    borderColor: '#E0E0E0',
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 13,
     height: 52,
-    backgroundColor: '#FFF', // Fundo branco
-    color: '#333', // Cor do texto
+    backgroundColor: '#FFF',
+    color: '#333',
   },
   row: {
     flexDirection: 'row',
@@ -108,10 +105,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   halfInputContainer: {
-    flex: 1, // Divide o espaço
+    flex: 1,
   },
   marginRight: {
-    marginRight: 10, // Espaço entre os campos da linha
+    marginRight: 10,
   },
 });
 export default CardParticipant;

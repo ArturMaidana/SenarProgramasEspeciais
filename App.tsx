@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import MainStack from './src/stacks/MainStack';
+import StackNavigator from './src/Navigations/StackNavigator';
 import UserContextProvider from './src/contexts/UserContext';
 import { AlertNotificationRoot } from 'react-native-alert-notification';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -14,7 +14,7 @@ export default () => {
         <UserContextProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <AlertNotificationRoot>
-              <MainStack />
+              <StackNavigator />
             </AlertNotificationRoot>
           </GestureHandlerRootView>
         </UserContextProvider>
