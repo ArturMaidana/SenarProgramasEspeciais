@@ -5,6 +5,18 @@ import { formatDate } from '../../utils/dateFormat';
 
 import { CalendarIcon, ArrowRightIcon, PinIcon } from '../Icons/Icons';
 
+const isToday = dateString => {
+  if (!dateString) return false;
+  const eventDate = new Date(dateString);
+  const today = new Date();
+
+  return (
+    eventDate.getFullYear() === today.getFullYear() &&
+    eventDate.getMonth() === today.getMonth() &&
+    eventDate.getDate() === today.getDate()
+  );
+};
+
 const STATUS_STYLES = {
   Fechamento: {
     color: '#ff2727ff',
@@ -12,10 +24,16 @@ const STATUS_STYLES = {
   'Em execução': {
     color: '#277dffff',
   },
+  'Execução fora de Data': {
+    color: '#ff2727ff',
+  },
   Programado: {
     color: '#6c757d',
   },
   'Em preenchimento': {
+    color: '#6c757d',
+  },
+  default: {
     color: '#6c757d',
   },
 };
@@ -23,7 +41,23 @@ const STATUS_STYLES = {
 const CardEvent = ({ eventId, title, dateEvent, location, date, status }) => {
   const navigation = useNavigation();
 
-  const currentStatusStyle = STATUS_STYLES[status] || STATUS_STYLES.default;
+  // Determina o status real com base na data
+  let effectiveStatus = status;
+  if (status === 'Em execução' && !isToday(dateEvent)) {
+    effectiveStatus = 'Execução fora de Data';
+  }
+
+  // Usa o 'effectiveStatus' para estilo
+  const currentStatusStyle =
+    STATUS_STYLES[effectiveStatus] || STATUS_STYLES.default;
+
+  // Lógica para encurtar o nome
+  let displayStatus = effectiveStatus;
+  const MAX_LENGTH = 18;
+
+  if (!STATUS_STYLES[displayStatus] && displayStatus.length > MAX_LENGTH) {
+    displayStatus = `${displayStatus.substring(0, MAX_LENGTH)}...`;
+  }
 
   return (
     <TouchableOpacity
@@ -57,11 +91,11 @@ const CardEvent = ({ eventId, title, dateEvent, location, date, status }) => {
             {formatDate(date)}
           </Text>
         </View>
+      </View>
 
-        <View style={styles.statusRow}>
-          <Text style={[styles.status, currentStatusStyle]}>{status}</Text>
-          <ArrowRightIcon width={16} height={16} style={currentStatusStyle} />
-        </View>
+      <View style={styles.statusRow}>
+        <Text style={[styles.status, currentStatusStyle]}>{displayStatus}</Text>
+        <ArrowRightIcon width={16} height={16} style={currentStatusStyle} />
       </View>
     </TouchableOpacity>
   );
@@ -95,7 +129,9 @@ const styles = StyleSheet.create({
     marginBottom: -5,
   },
   bodyContainer: {
-    padding: 8,
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   infoRow: {
     flexDirection: 'row',
@@ -121,11 +157,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: -10,
+    paddingHorizontal: 10,
+    paddingBottom: 8,
   },
   status: {
     fontWeight: '500',
     fontSize: 12,
+    marginRight: 2,
   },
 });
 

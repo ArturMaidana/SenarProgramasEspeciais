@@ -32,8 +32,7 @@ const ReportCard = ({ title, icon, children }) => (
 
 export default function ReportScreen({ navigation }) {
   const route = useRoute();
-  const { eventId } = route.params || {};
-
+  const { eventId, dateEvent } = route.params || {};
   const [report, setReport] = useState(null);
 
   useEffect(() => {
@@ -55,14 +54,14 @@ export default function ReportScreen({ navigation }) {
         }
 
         const location = extractLocation(firstEvent?.event_name);
-
-        const rawDate = firstEvent?.date;
+        const rawDate = dateEvent; // Use a data vinda dos parâmetros
 
         const formattedDate = rawDate
           ? new Date(rawDate).toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: 'long',
               year: 'numeric',
+              timeZone: 'UTC', // 👈 ADICIONE ESTA LINHA
             })
           : '--/--/----';
 
@@ -208,6 +207,8 @@ export default function ReportScreen({ navigation }) {
               navigation.navigate('ServiceDetails', {
                 serviceName: service.name,
                 eventId: eventId,
+                date: report.date, // 👈 ADICIONE A DATA
+                location: report.location, // 👈 ADICIONE O LOCAL
               })
             }
           >

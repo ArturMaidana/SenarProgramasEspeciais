@@ -10,6 +10,7 @@ export default function TodayCard({
   idText,
   location,
   date,
+  statusColor,
   statusText,
   onPress,
 }) {
@@ -37,7 +38,14 @@ export default function TodayCard({
         </View>
 
         <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>{statusText}</Text>
+          <Text
+            style={[
+              styles.statusText,
+              statusColor ? { color: statusColor } : {}, // Aplica a cor se ela for fornecida
+            ]}
+          >
+            {statusText}
+          </Text>
           <ArrowRightIcon />
         </View>
       </View>

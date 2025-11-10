@@ -8,6 +8,7 @@ import {
   Text,
   StyleSheet,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -37,6 +38,17 @@ import {
   CheckIcon,
 } from '../../components/Icons/Icons';
 
+const isToday = dateString => {
+  if (!dateString) return false;
+  const eventDate = new Date(dateString);
+  const today = new Date();
+  return (
+    eventDate.getFullYear() === today.getFullYear() &&
+    eventDate.getMonth() === today.getMonth() &&
+    eventDate.getDate() === today.getDate()
+  );
+};
+
 const statusConfig = {
   Realizada: { color: '#00A859', label: 'Realizada' },
   'Em Atendimento': { color: '#007BFF', label: 'Em Atendimento' },
@@ -55,6 +67,12 @@ const categoryIcons = {
   'CORTE DE CABELO': <ScissorsIcon />,
   MAQUIAGEM: <MakeupBrushIcon />,
   'ENTREGA DE ÓCULOS': <GlassesIcon />,
+  'ATENDIMENTO DE BELEZA': <MakeupBrushIcon />,
+};
+
+const categoryDisplayNames = {
+  'ATENDIMENTO DE BELEZA': 'BELEZA',
+  // 'OUTRO NOME LONGO DO BACKEND': 'NOME CURTO'
 };
 
 export default function Service() {
@@ -72,7 +90,7 @@ export default function Service() {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [eventEducationalId, setEventEducationalId] = useState(null);
   const [sequential, setSequential] = useState(null);
-
+  const isLocked = status === 'Em execução' && !isToday(dateEvent);
   const [educationalEvents, setEducationalEvents] = useState([]);
   const [cities, setCities] = useState([]);
   const [genders, setGenders] = useState([]);
@@ -80,7 +98,7 @@ export default function Service() {
   const [priorities, setPriorities] = useState([]);
 
   const [loading, setLoading] = useState(true);
-
+  const [renderingSectionIndex, setRenderingSectionIndex] = useState(null);
   const [name, setName] = useState(true);
   const [nameCordial, setNameCordial] = useState(true);
 
@@ -105,17 +123,27 @@ export default function Service() {
 
   useEffect(() => {
     if (educationalEvents.length > 0 && isSectionVisible.length === 0) {
-      const initialVisibility = educationalEvents.map(
-        (_, index) => index === 0,
-      );
+      const initialVisibility = educationalEvents.map(() => false);
       setSectionVisible(initialVisibility);
     }
   }, [educationalEvents.length]);
-
   const toggleSection = index => {
-    setSectionVisible(prev =>
-      prev.map((visible, i) => (i === index ? !visible : visible)),
-    );
+    const isOpening = !isSectionVisible[index];
+
+    if (isOpening) {
+      setRenderingSectionIndex(index);
+
+      setTimeout(() => {
+        setSectionVisible(prev =>
+          prev.map((visible, i) => (i === index ? !visible : visible)),
+        );
+        setRenderingSectionIndex(null);
+      }, 50);
+    } else {
+      setSectionVisible(prev =>
+        prev.map((visible, i) => (i === index ? !visible : visible)),
+      );
+    }
   };
 
   const toggleFilters = () => setFiltersVisible(prev => !prev);
@@ -151,9 +179,8 @@ export default function Service() {
     setSequential(sequential);
 
     setNameCordial(sexo === 'Feminino' ? 'Sra. ' : 'Sr. ');
-    setIsAttend(situation == 1 || situation == 2);
-    setCancel(situation > 3);
-
+    setIsAttend((situation == 1 || situation == 2) && !isLocked);
+    setCancel(situation > 3 || isLocked);
     setModalVisible(true);
   };
 
@@ -343,7 +370,7 @@ export default function Service() {
         priorities={priorities}
         eventId={eventId}
         onNavigate={() => setShouldFetch(false)}
-        visibleRegister={!loading && isCreateEvent}
+        visibleRegister={!loading && isCreateEvent && !isLocked}
       />
 
       {loading ? (
@@ -365,9 +392,10 @@ export default function Service() {
           />
           <ScrollView>
             {educationalEvents.map((client, index) => {
-              const icon = categoryIcons[normalize(client.name)] || (
-                <CancelIcon />
-              );
+              const normalizedName = normalize(client.name);
+              const icon = categoryIcons[normalizedName] || <CancelIcon />;
+              const displayName =
+                categoryDisplayNames[normalizedName] || normalizedName;
 
               console.log(
                 `Serviço: ${client.name}, Participantes:`,
@@ -386,9 +414,9 @@ export default function Service() {
                   >
                     <View style={styles.headerLeft}>
                       <View style={styles.iconContainer}>{icon}</View>
-                      <Text style={styles.categoryTitle}>
-                        {client.name.toUpperCase()} -{' '}
-                      </Text>
+
+                      <Text style={styles.categoryTitle}>{displayName} - </Text>
+
                       <Text style={styles.categoryCount}>
                         {client.participants.length} Atendimentos
                       </Text>
@@ -396,108 +424,118 @@ export default function Service() {
                     <ArrowDownIcon isExpanded={isSectionVisible[index]} />
                   </TouchableOpacity>
 
-                  {isSectionVisible[index] && (
-                    <View style={styles.itemList}>
-                      {client.participants.map((participant, partIndex) => {
-                        const situationLabel =
-                          situationsMaps[participant.situation] || 'Indefinido';
-                        const currentStatus = statusConfig[situationLabel] || {
-                          color: '#6c757d',
-                          label: 'Indefinido',
-                        };
-
-                        const situationText =
-                          participant.situation == 1 &&
-                          participant.prioritie_id > 1
-                            ? 'Aten. Preferencial'
-                            : currentStatus.label;
-
-                        const statusColor =
-                          participant.situation == 1 &&
-                          participant.prioritie_id > 1
-                            ? statusConfig['Preferencial'].color
-                            : currentStatus.color;
-
-                        return (
-                          <TouchableOpacity
-                            key={participant.id}
-                            style={[
-                              styles.itemCard,
-                              { borderLeftColor: statusColor },
-                            ]}
-                            onPress={() =>
-                              openModal(
-                                participant.id,
-                                participant.first_name,
-                                participant.sexo,
-                                participant.situation,
-                                participant.sequential,
-                              )
-                            }
-                            activeOpacity={0.7}
-                          >
-                            <View style={styles.itemHeader}>
-                              <Text style={styles.itemName} numberOfLines={1}>
-                                #{participant.sequential} -{' '}
-                                {participant.first_name}
-                              </Text>
-                              <TouchableOpacity
-                                onPress={() =>
-                                  openModal(
-                                    participant.id,
-                                    participant.first_name,
-                                    participant.sexo,
-                                    participant.situation,
-                                    participant.sequential,
-                                  )
-                                }
-                              >
-                                <SharpMoreVert />
-                              </TouchableOpacity>
-                            </View>
-                            <View style={styles.itemBody}>
-                              <View style={styles.itemColumn}>
-                                <Text style={styles.itemLabel}>
-                                  CPF:{' '}
-                                  <Text style={styles.itemValue}>
-                                    {participant.cpf}
-                                  </Text>
-                                </Text>
-                                <Text style={styles.itemLabel}>
-                                  Contato:{' '}
-                                  <Text style={styles.itemValue}>
-                                    {formatFone(participant.number)}
-                                  </Text>
-                                </Text>
-                              </View>
-                              <View style={styles.itemColumn}>
-                                <Text style={styles.itemLabel}>
-                                  Sexo:{' '}
-                                  <Text style={styles.itemValue}>
-                                    {participant.sexo}
-                                  </Text>
-                                </Text>
-                                <Text style={styles.itemLabel}>
-                                  Situação:{' '}
-                                  <Text
-                                    style={[
-                                      styles.itemValue,
-                                      {
-                                        color: statusColor,
-                                        fontFamily: 'Ubuntu-Bold',
-                                      },
-                                    ]}
-                                  >
-                                    {situationText}
-                                  </Text>
-                                </Text>
-                              </View>
-                            </View>
-                          </TouchableOpacity>
-                        );
-                      })}
+                  {renderingSectionIndex === index && (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="large" color="#00A859" />
                     </View>
                   )}
+
+                  {isSectionVisible[index] &&
+                    renderingSectionIndex !== index && (
+                      <View style={styles.itemList}>
+                        {client.participants.map((participant, partIndex) => {
+                          const situationLabel =
+                            situationsMaps[participant.situation] ||
+                            'Indefinido';
+                          const currentStatus = statusConfig[
+                            situationLabel
+                          ] || {
+                            color: '#6c757d',
+                            label: 'Indefinido',
+                          };
+
+                          const situationText =
+                            participant.situation == 1 &&
+                            participant.prioritie_id > 1
+                              ? 'Aten. Preferencial'
+                              : currentStatus.label;
+
+                          const statusColor =
+                            participant.situation == 1 &&
+                            participant.prioritie_id > 1
+                              ? statusConfig['Preferencial'].color
+                              : currentStatus.color;
+
+                          return (
+                            <TouchableOpacity
+                              key={participant.id}
+                              style={[
+                                styles.itemCard,
+                                { borderLeftColor: statusColor },
+                              ]}
+                              onPress={() =>
+                                openModal(
+                                  participant.id,
+                                  participant.first_name,
+                                  participant.sexo,
+                                  participant.situation,
+                                  participant.sequential,
+                                )
+                              }
+                              activeOpacity={0.7}
+                            >
+                              <View style={styles.itemHeader}>
+                                <Text style={styles.itemName} numberOfLines={1}>
+                                  #{participant.sequential} -{' '}
+                                  {participant.first_name}
+                                </Text>
+                                <TouchableOpacity
+                                  onPress={() =>
+                                    openModal(
+                                      participant.id,
+                                      participant.first_name,
+                                      participant.sexo,
+                                      participant.situation,
+                                      participant.sequential,
+                                    )
+                                  }
+                                >
+                                  <SharpMoreVert />
+                                </TouchableOpacity>
+                              </View>
+                              <View style={styles.itemBody}>
+                                <View style={styles.itemColumn}>
+                                  <Text style={styles.itemLabel}>
+                                    CPF:{' '}
+                                    <Text style={styles.itemValue}>
+                                      {participant.cpf}
+                                    </Text>
+                                  </Text>
+                                  <Text style={styles.itemLabel}>
+                                    Contato:{' '}
+                                    <Text style={styles.itemValue}>
+                                      {formatFone(participant.number)}
+                                    </Text>
+                                  </Text>
+                                </View>
+                                <View style={styles.itemColumn}>
+                                  <Text style={styles.itemLabel}>
+                                    Sexo:{' '}
+                                    <Text style={styles.itemValue}>
+                                      {participant.sexo}
+                                    </Text>
+                                  </Text>
+                                  <Text style={styles.itemLabel}>
+                                    Situação:{' '}
+                                    <Text
+                                      style={[
+                                        styles.itemValue,
+                                        {
+                                          color: statusColor,
+                                          fontFamily: 'Ubuntu-Bold',
+                                        },
+                                      ]}
+                                    >
+                                      {situationText}
+                                    </Text>
+                                  </Text>
+                                </View>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    )}
                 </View>
               );
             })}
@@ -568,7 +606,9 @@ export default function Service() {
       {podeGerarRelatorio && (
         <TouchableOpacity
           style={styles.reportBtn}
-          onPress={() => navigation.navigate('Relatorio', { eventId })}
+          onPress={() =>
+            navigation.navigate('Relatorio', { eventId, dateEvent })
+          }
         >
           <Text style={styles.reportBtnText}>Gerar Relatório</Text>
         </TouchableOpacity>
@@ -645,6 +685,11 @@ const styles = StyleSheet.create({
     fontWeight: 'normal',
     fontSize: 13,
     color: '#00A859',
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   itemList: {
     paddingHorizontal: 12,

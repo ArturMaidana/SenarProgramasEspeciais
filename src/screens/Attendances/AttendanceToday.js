@@ -7,6 +7,19 @@ import { formatDate } from '../../utils/dateFormat';
 import { dataAtual } from '../../utils/date';
 import { s, vs, ms } from 'react-native-size-matters';
 
+const isToday = dateString => {
+  if (!dateString) return false;
+  const eventDate = new Date(dateString);
+  const today = new Date();
+
+  // Compara ano, mês e dia no fuso horário local
+  return (
+    eventDate.getFullYear() === today.getFullYear() &&
+    eventDate.getMonth() === today.getMonth() &&
+    eventDate.getDate() === today.getDate()
+  );
+};
+
 export default function AttendanceToday({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [runningEvents, setRunningEvents] = useState([]);
@@ -17,6 +30,7 @@ export default function AttendanceToday({ navigation }) {
     navigation.navigate('Atendimentos', {
       eventId: event.id,
       dateEvent: event.started_at,
+      status: event.status,
     });
   };
 
@@ -28,7 +42,20 @@ export default function AttendanceToday({ navigation }) {
 
       const events = response.data || [];
 
-      const executing = events.filter(ev => ev.status === 'Em execução');
+      // 👇 3. MODIFIQUE A LÓGICA DE FILTRO
+      const executing = events
+        .filter(ev => ev.status === 'Em execução') // Pega todos "Em execução"
+        .map(ev => {
+          // Verifica a data
+          const isEventToday = isToday(ev.started_at);
+          return {
+            ...ev,
+            // Define o status de UI
+            uiStatus: isEventToday ? 'Em Execução' : 'Execução fora de Data',
+            // Define se está bloqueado
+            isLocked: !isEventToday,
+          };
+        });
 
       setRunningEvents(executing);
     } catch (error) {
@@ -69,6 +96,7 @@ export default function AttendanceToday({ navigation }) {
 
           {runningEvents.map(event => {
             const textoDescricao = `Aviso aos cidadãos de ${event.city}: Vai acontecer um mutirão rural, aproveite a oportunidade para regularizar sua situação; fique atento à data!`;
+            const statusColor = event.isLocked ? '#DC3545' : '#005ca8ff';
 
             return (
               <TodayCard
@@ -77,7 +105,8 @@ export default function AttendanceToday({ navigation }) {
                 idText={`${event.city} - ${formatDate(event.started_at)}`}
                 location={textoDescricao}
                 date={event.start_time}
-                statusText="Em Execução"
+                statusText={event.uiStatus} // Usa o status da UI
+                statusColor={statusColor} // Passa a nova cor
                 onPress={() => handleCardPress(event)}
               />
             );

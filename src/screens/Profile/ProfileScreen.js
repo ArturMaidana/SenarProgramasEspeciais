@@ -152,9 +152,9 @@ export default function ProfileScreen() {
               source={require('../../assets/AdminPhoto.png')}
             />
             <Text style={styles.userName}>{userName}</Text>
-            <TouchableOpacity style={styles.editButton}>
+            {/* <TouchableOpacity style={styles.editButton}>
               <Text style={styles.editButtonText}>Editar Perfil</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <View style={styles.section}>

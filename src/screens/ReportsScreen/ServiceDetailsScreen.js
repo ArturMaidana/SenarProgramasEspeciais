@@ -5,24 +5,22 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { s, vs, ms } from 'react-native-size-matters';
-
+import { PieChart as RNPieChart } from 'react-native-chart-kit';
 import api from '../../services/endpont';
 
 import {
-  BackPage,
   OutlineCalendarToday,
   LocationPin,
   UsersGroup,
   BarChart,
-  OutlineFileDownload,
 } from '../../components/Icons/Icons';
 import Toolbar from '../../components/ui/Toolbar';
 
-// ------------------------------
-// COMPONENTES
-// ------------------------------
+const screenWidth = Dimensions.get('window').width;
+
 const DetailCard = ({ title, icon, children }) => (
   <View style={styles.cardContainer}>
     <View style={styles.cardHeader}>
@@ -33,54 +31,27 @@ const DetailCard = ({ title, icon, children }) => (
   </View>
 );
 
-// Barra horizontal para Sexo
-const HorizontalBar = ({ label, value, total, color }) => {
+const ProgressBar = ({ label, value, total, color }) => {
   const pct = total > 0 ? (value / total) * 100 : 0;
 
   return (
     <View style={styles.barRow}>
       <Text style={styles.barLabel}>{label}</Text>
-
       <View style={styles.barContainer}>
         <View
           style={[styles.barFill, { width: `${pct}%`, backgroundColor: color }]}
         />
       </View>
-
       <Text style={styles.barValue}>{value}</Text>
     </View>
   );
 };
 
-// Barra Progress para Prioridade
-const ProgressBar = ({ label, value, total, color }) => {
-  const pct = total > 0 ? (value / total) * 100 : 0;
-
-  return (
-    <View style={styles.progressRow}>
-      <Text style={styles.progressLabel}>{label}</Text>
-      <View style={styles.progressContainer}>
-        <View
-          style={[
-            styles.progressBar,
-            { width: `${pct}%`, backgroundColor: color },
-          ]}
-        />
-      </View>
-      <Text style={styles.progressValue}>{value}</Text>
-    </View>
-  );
-};
-
-// ========================================================
-// TELA PRINCIPAL
-// ========================================================
 export default function ServiceDetailsScreen({ route, navigation }) {
-  const { serviceName, eventId } = route.params;
+  const { serviceName, eventId, date, location } = route.params;
 
   const [details, setDetails] = useState(null);
 
-  // 🔎 NORMALIZE igual ao da ReportScreen
   const normalize = name => {
     const n = (name || '').toUpperCase();
     if (n.includes('OFTAL')) return 'OFTALMOLOGIA';
@@ -97,13 +68,19 @@ export default function ServiceDetailsScreen({ route, navigation }) {
       try {
         const response = await api.patchEventsServices(eventId, '', []);
         const eventServices = response.data.eventServices || [];
-
         const selectedService = eventServices.find(
           svc => normalize(svc.name) === serviceName,
         );
 
         if (!selectedService) {
           console.log('❌ Serviço não encontrado:', serviceName);
+          setDetails({
+            total: 0,
+            sexo: [],
+            prioridade: [],
+            location: location || '--',
+            date: date || '--',
+          });
           return;
         }
 
@@ -114,12 +91,20 @@ export default function ServiceDetailsScreen({ route, navigation }) {
           Feminino: participants.filter(p => p.sexo === 'Feminino').length,
         };
 
-        const sexoChart = [
-          { category: 'Feminino', count: sexoCount.Feminino, color: '#00A859' },
+        const sexoChartData = [
           {
-            category: 'Masculino',
-            count: sexoCount.Masculino,
+            name: 'Feminino',
+            population: sexoCount.Feminino,
+            color: '#00A859',
+            legendFontColor: '#424242',
+            legendFontSize: ms(14),
+          },
+          {
+            name: 'Masculino',
+            population: sexoCount.Masculino,
             color: '#e42727ff',
+            legendFontColor: '#424242',
+            legendFontSize: ms(14),
           },
         ];
 
@@ -129,7 +114,7 @@ export default function ServiceDetailsScreen({ route, navigation }) {
           prioridadeMap[key] = (prioridadeMap[key] || 0) + 1;
         });
 
-        const prioridadeChart = Object.entries(prioridadeMap).map(
+        const prioridadeItens = Object.entries(prioridadeMap).map(
           ([category, count]) => ({
             category,
             count,
@@ -137,20 +122,31 @@ export default function ServiceDetailsScreen({ route, navigation }) {
           }),
         );
 
+        const sortedPrioridade = prioridadeItens.sort(
+          (a, b) => b.count - a.count,
+        );
+
         setDetails({
           total: participants.length,
-          sexo: sexoChart,
-          prioridade: prioridadeChart,
-          location: response.data.city || '--',
-          date: response.data.date || '--',
+          sexo: sexoChartData,
+          prioridade: sortedPrioridade,
+          location: location || '--',
+          date: date || '--',
         });
       } catch (err) {
         console.log('Erro ao carregar detalhes:', err);
+        setDetails({
+          total: 0,
+          sexo: [],
+          prioridade: [],
+          location: location || '--',
+          date: date || '--',
+        });
       }
     }
 
     loadDetails();
-  }, [eventId, serviceName]);
+  }, [eventId, serviceName, date, location]);
 
   if (!details) {
     return (
@@ -160,11 +156,12 @@ export default function ServiceDetailsScreen({ route, navigation }) {
     );
   }
 
-  const totalGender = details.sexo.reduce((s, item) => s + item.count, 0);
   const totalPriority = details.prioridade.reduce(
     (s, item) => s + item.count,
     0,
   );
+
+  const totalGender = details.sexo.reduce((s, item) => s + item.population, 0);
 
   return (
     <View style={styles.container}>
@@ -206,32 +203,43 @@ export default function ServiceDetailsScreen({ route, navigation }) {
           title="Distribuição por Sexo"
           icon={<BarChart width={s(22)} height={s(22)} color="#212121" />}
         >
-          {details.sexo.map(item => (
-            <HorizontalBar
-              key={item.category}
-              label={item.category}
-              value={item.count}
-              total={totalGender}
-              color={item.color}
+          {totalGender > 0 ? (
+            <RNPieChart
+              data={details.sexo}
+              width={screenWidth - s(60)}
+              height={vs(180)}
+              chartConfig={chartConfig}
+              accessor={'population'}
+              backgroundColor={'transparent'}
+              paddingLeft={'15'}
+              center={[s(10), 0]}
+              absolute
+              style={styles.chartStyle}
             />
-          ))}
+          ) : (
+            <Text style={styles.noDataText}>Sem dados de sexo.</Text>
+          )}
         </DetailCard>
 
         <DetailCard
           title="Distribuição por Prioridade"
           icon={<BarChart width={s(22)} height={s(22)} color="#212121" />}
         >
-          <View style={styles.progressSection}>
-            {details.prioridade.map(item => (
-              <ProgressBar
-                key={item.category}
-                label={item.category}
-                value={item.count}
-                total={totalPriority}
-                color={item.color}
-              />
-            ))}
-          </View>
+          {details.prioridade.length > 0 ? (
+            <View style={styles.progressContainer}>
+              {details.prioridade.map(item => (
+                <ProgressBar
+                  key={item.category}
+                  label={item.category}
+                  value={item.count}
+                  total={totalPriority}
+                  color={item.color}
+                />
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.noDataText}>Sem dados de prioridade.</Text>
+          )}
         </DetailCard>
       </ScrollView>
 
@@ -250,7 +258,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  // Estilo do PieChart
+  chartStyle: {
+    marginVertical: vs(8),
+    borderRadius: ms(12),
+    alignItems: 'center', // Centraliza o PieChart
+  },
+  noDataText: {
+    fontSize: ms(14),
+    color: '#757575',
+    textAlign: 'center',
+    paddingVertical: vs(20),
+  },
 
+  // Estilos da Tela
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -263,12 +284,10 @@ const styles = StyleSheet.create({
     color: '#333',
     marginLeft: s(15),
   },
-
   scrollContent: {
     paddingHorizontal: s(15),
     paddingBottom: vs(100),
   },
-
   cardContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: ms(12),
@@ -287,7 +306,6 @@ const styles = StyleSheet.create({
     color: '#212121',
     marginLeft: s(10),
   },
-
   detailsTitle: {
     fontSize: ms(15),
     color: '#333',
@@ -304,18 +322,22 @@ const styles = StyleSheet.create({
     marginLeft: s(10),
   },
 
+  progressContainer: {
+    paddingTop: vs(5),
+  },
+
   barRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: vs(12),
+    marginBottom: vs(15),
   },
   barLabel: {
-    flex: 0.35,
+    flex: 0.35, // 35%
     fontSize: ms(14),
     color: '#444',
   },
   barContainer: {
-    flex: 0.65,
+    flex: 0.5, // 50%
     height: vs(12),
     backgroundColor: '#E0E0E0',
     borderRadius: ms(6),
@@ -327,38 +349,10 @@ const styles = StyleSheet.create({
     borderRadius: ms(6),
   },
   barValue: {
+    flex: 0.15, // 15%
     fontSize: ms(14),
     color: '#333',
-  },
-
-  progressSection: {
-    paddingVertical: vs(10),
-  },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: vs(15),
-  },
-  progressLabel: {
-    flex: 0.35,
-    fontSize: ms(14),
-    color: '#424242',
-  },
-  progressContainer: {
-    flex: 0.65,
-    height: vs(12),
-    backgroundColor: '#EEEEEE',
-    borderRadius: ms(6),
-    overflow: 'hidden',
-    marginHorizontal: s(10),
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: ms(6),
-  },
-  progressValue: {
-    fontSize: ms(14),
-    color: '#212121',
+    textAlign: 'right',
   },
 
   footer: {
@@ -385,3 +379,15 @@ const styles = StyleSheet.create({
     marginLeft: s(10),
   },
 });
+
+const chartConfig = {
+  backgroundColor: '#ffffff',
+  backgroundGradientFrom: '#ffffff',
+  backgroundGradientTo: '#ffffff',
+  decimalPlaces: 0,
+  color: (opacity = 1) => `rgba(0, 168, 89, ${opacity})`,
+  labelColor: (opacity = 1) => `rgba(66, 66, 66, ${opacity})`,
+  style: {
+    borderRadius: 12,
+  },
+};

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View, ActivityIndicator } from 'react-native';
 import CardEvent from '../../components/ui/CardEvent';
 import CardNotEvent from '../../components/ui/CardNotEvent';
 import GlobalSearchBar from '../../components/ui/GlobalSearch';
@@ -15,7 +15,7 @@ const Container = ({ children }) => (
 export default function Home({ navigation }) {
   const dateNow = dataAtual();
   const [monthlyEventCounts, setMonthlyEventCounts] = useState({});
-
+  const [isMonthLoading, setIsMonthLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [educationalEvents, setEducationalEvents] = useState([]);
 
@@ -43,6 +43,7 @@ export default function Home({ navigation }) {
   function updatedMonth(index) {
     setSelectedMonth(index);
     setEducationalEvents([]);
+    setIsMonthLoading(true);
 
     const year = new Date().getFullYear();
     const firstDayOfMonth = new Date(year, index, 1);
@@ -55,8 +56,15 @@ export default function Home({ navigation }) {
   }
 
   async function getEvents(date) {
-    const educationalEvents = await api.getEventsAtendeDate(date);
-    setEducationalEvents(educationalEvents.data);
+    try {
+      const educationalEvents = await api.getEventsAtendeDate(date);
+      setEducationalEvents(educationalEvents.data);
+    } catch (error) {
+      console.error('Erro ao buscar eventos:', error);
+      setEducationalEvents([]); // Garante que a lista fique vazia em caso de erro
+    } finally {
+      setIsMonthLoading(false); // 👈 4. DESATIVE O LOADING AQUI
+    }
   }
 
   useEffect(() => {
@@ -85,7 +93,14 @@ export default function Home({ navigation }) {
       />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {educationalEvents.length > 0 ? (
+        {/* 👇 5. SUBSTITUA O TERNÁRIO ANTIGO POR ESTA LÓGICA */}
+        {isMonthLoading ? (
+          <ActivityIndicator
+            size="large"
+            color="#07814f"
+            style={styles.loadingIndicator}
+          />
+        ) : educationalEvents.length > 0 ? (
           educationalEvents.map(event => (
             <CardEvent
               key={event.id}
@@ -115,6 +130,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#ffffffff',
     maxHeight: 80,
+  },
+  loadingIndicator: {
+    marginTop: 50, // Adiciona um espaço no topo
   },
   monthButton: {
     marginRight: 10,
