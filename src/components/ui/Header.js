@@ -40,10 +40,6 @@ export default function Header() {
     loadStorage();
   }, []);
 
-  const handleNotificationPress = () => {
-    console.log('Notificações pressionadas');
-  };
-
   return (
     <View style={styles.staticHeader}>
       <View style={styles.header}>
@@ -56,12 +52,6 @@ export default function Header() {
           <Text style={styles.welcomeText}>Bem-vindo, {userName}</Text>
           <Text style={styles.locationText}>{location}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.notificationButton}
-          onPress={handleNotificationPress}
-        >
-          <BellIcon />
-        </TouchableOpacity>
       </View>
     </View>
   );

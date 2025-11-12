@@ -175,25 +175,6 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Preferências</Text>
-            <View style={styles.sectionGroup}>
-              <ProfileRow
-                iconName="bell"
-                text="Notificações"
-                type="switch"
-                switchValue={notificationsEnabled}
-                onSwitchChange={setNotificationsEnabled}
-              />
-              <View style={styles.separator} />
-              <ProfileRow
-                iconName="grid"
-                text="QRCode"
-                onPress={() => setQrModalVisible(true)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Outros</Text>
             <ProfileRow
               iconName="check-circle"
@@ -250,17 +231,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Ubuntu-Bold',
     color: '#212121',
     marginBottom: ms(20),
-    marginTop: ms(25),
+    marginTop: ms(35),
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: ms(8),
-    padding: ms(25),
-    elevation: ms(4),
+    borderRadius: ms(12),
+    padding: ms(35),
+    elevation: ms(5),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    marginTop: ms(20),
+    marginBottom: ms(50),
   },
   profileHeader: {
     alignItems: 'center',

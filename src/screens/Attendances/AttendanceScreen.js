@@ -38,15 +38,28 @@ import {
   CheckIcon,
 } from '../../components/Icons/Icons';
 
-const isToday = dateString => {
-  if (!dateString) return false;
+const isBeforeToday = dateString => {
+  if (!dateString) return false; // Não podemos comparar
+
   const eventDate = new Date(dateString);
   const today = new Date();
-  return (
-    eventDate.getFullYear() === today.getFullYear() &&
-    eventDate.getMonth() === today.getMonth() &&
-    eventDate.getDate() === today.getDate()
+
+  // Cria uma data UTC para o início do dia do evento
+  const eventDateUTC = new Date(
+    Date.UTC(
+      eventDate.getUTCFullYear(),
+      eventDate.getUTCMonth(),
+      eventDate.getUTCDate(),
+    ),
   );
+
+  // Cria uma data UTC para o início do dia de hoje
+  const todayDateUTC = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+
+  // Retorna true se a data do evento (UTC) for < data de hoje (UTC)
+  return eventDateUTC.getTime() < todayDateUTC.getTime();
 };
 
 const statusConfig = {
@@ -90,7 +103,7 @@ export default function Service() {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [eventEducationalId, setEventEducationalId] = useState(null);
   const [sequential, setSequential] = useState(null);
-  const isLocked = status === 'Em execução' && !isToday(dateEvent);
+  const isLocked = status === 'Em execução' && isBeforeToday(dateEvent);
   const [educationalEvents, setEducationalEvents] = useState([]);
   const [cities, setCities] = useState([]);
   const [genders, setGenders] = useState([]);

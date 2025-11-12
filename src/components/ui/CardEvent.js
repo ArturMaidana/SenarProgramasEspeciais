@@ -5,16 +5,28 @@ import { formatDate } from '../../utils/dateFormat';
 
 import { CalendarIcon, ArrowRightIcon, PinIcon } from '../Icons/Icons';
 
-const isToday = dateString => {
-  if (!dateString) return false;
+const isBeforeToday = dateString => {
+  if (!dateString) return false; // Não podemos comparar
+
   const eventDate = new Date(dateString);
   const today = new Date();
 
-  return (
-    eventDate.getFullYear() === today.getFullYear() &&
-    eventDate.getMonth() === today.getMonth() &&
-    eventDate.getDate() === today.getDate()
+  // Cria uma data UTC para o início do dia do evento
+  const eventDateUTC = new Date(
+    Date.UTC(
+      eventDate.getUTCFullYear(),
+      eventDate.getUTCMonth(),
+      eventDate.getUTCDate(),
+    ),
   );
+
+  // Cria uma data UTC para o início do dia de hoje
+  const todayDateUTC = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+
+  // Retorna true se a data do evento (UTC) for < data de hoje (UTC)
+  return eventDateUTC.getTime() < todayDateUTC.getTime();
 };
 
 const STATUS_STYLES = {
@@ -43,10 +55,9 @@ const CardEvent = ({ eventId, title, dateEvent, location, date, status }) => {
 
   // Determina o status real com base na data
   let effectiveStatus = status;
-  if (status === 'Em execução' && !isToday(dateEvent)) {
+  if (status === 'Em execução' && isBeforeToday(dateEvent)) {
     effectiveStatus = 'Execução fora de Data';
   }
-
   // Usa o 'effectiveStatus' para estilo
   const currentStatusStyle =
     STATUS_STYLES[effectiveStatus] || STATUS_STYLES.default;

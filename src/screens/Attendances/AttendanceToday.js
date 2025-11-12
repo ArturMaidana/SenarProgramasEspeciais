@@ -7,17 +7,28 @@ import { formatDate } from '../../utils/dateFormat';
 import { dataAtual } from '../../utils/date';
 import { s, vs, ms } from 'react-native-size-matters';
 
-const isToday = dateString => {
-  if (!dateString) return false;
+const isBeforeToday = dateString => {
+  if (!dateString) return false; // Não podemos comparar
+
   const eventDate = new Date(dateString);
   const today = new Date();
 
-  // Compara ano, mês e dia no fuso horário local
-  return (
-    eventDate.getFullYear() === today.getFullYear() &&
-    eventDate.getMonth() === today.getMonth() &&
-    eventDate.getDate() === today.getDate()
+  // Cria uma data UTC para o início do dia do evento
+  const eventDateUTC = new Date(
+    Date.UTC(
+      eventDate.getUTCFullYear(),
+      eventDate.getUTCMonth(),
+      eventDate.getUTCDate(),
+    ),
   );
+
+  // Cria uma data UTC para o início do dia de hoje
+  const todayDateUTC = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+
+  // Retorna true se a data do evento (UTC) for < data de hoje (UTC)
+  return eventDateUTC.getTime() < todayDateUTC.getTime();
 };
 
 export default function AttendanceToday({ navigation }) {
@@ -47,13 +58,14 @@ export default function AttendanceToday({ navigation }) {
         .filter(ev => ev.status === 'Em execução') // Pega todos "Em execução"
         .map(ev => {
           // Verifica a data
-          const isEventToday = isToday(ev.started_at);
+          const isEventBeforeToday = isBeforeToday(ev.started_at);
           return {
             ...ev,
             // Define o status de UI
-            uiStatus: isEventToday ? 'Em Execução' : 'Execução fora de Data',
-            // Define se está bloqueado
-            isLocked: !isEventToday,
+            uiStatus: isEventBeforeToday
+              ? 'Execução fora de Data'
+              : 'Em Execução', // Define se está bloqueado
+            isLocked: isEventBeforeToday,
           };
         });
 

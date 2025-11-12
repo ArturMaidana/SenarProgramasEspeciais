@@ -5,11 +5,19 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { s, vs, ms } from 'react-native-size-matters';
 import PieChart from '../../components/ui/PieChart';
-import api from '../../services/endpont';
 import { useRoute } from '@react-navigation/native';
+
+import apiHelpers from '../../services/endpont';
+import apiAxios from '../../services/api';
+
+import RNFS from 'react-native-fs';
+import FileViewer from 'react-native-file-viewer';
 
 import {
   BaselineElectricBolt,
@@ -17,6 +25,7 @@ import {
   CalendarFill,
   MapPin,
   PeopleFilled,
+  OutlineFileDownload,
 } from '../../components/Icons/Icons';
 import Toolbar from '../../components/ui/Toolbar';
 
@@ -34,34 +43,33 @@ export default function ReportScreen({ navigation }) {
   const route = useRoute();
   const { eventId, dateEvent } = route.params || {};
   const [report, setReport] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     async function loadReport() {
       try {
-        const response = await api.patchEventsServices(eventId, '', []);
+        const response = await apiHelpers.patchEventsServices(eventId, '', []); // 👈
         console.log('🔍 Dados completos do serviço clicado:', response.data);
 
+        // ... (O resto do seu useEffect não muda) ...
         const data = response.data;
         const categoriesRaw = data.eventServices || [];
-
         const firstEvent = data.eventServices?.[0];
 
         function extractLocation(eventName) {
           if (!eventName) return 'Local não informado';
-
           const parts = eventName.split(':');
           return parts.length > 1 ? parts[1].trim() : 'Local não informado';
         }
 
         const location = extractLocation(firstEvent?.event_name);
-        const rawDate = dateEvent; // Use a data vinda dos parâmetros
-
+        const rawDate = dateEvent;
         const formattedDate = rawDate
           ? new Date(rawDate).toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: 'long',
               year: 'numeric',
-              timeZone: 'UTC', // 👈 ADICIONE ESTA LINHA
+              timeZone: 'UTC',
             })
           : '--/--/----';
 
@@ -76,7 +84,6 @@ export default function ReportScreen({ navigation }) {
 
         const normalize = (name = '') => {
           const n = name.toString().trim().toUpperCase();
-
           if (n.includes('OFTAL')) return 'OFTALMOLOGIA';
           if (n.includes('ODONTO')) return 'ODONTOLOGIA';
           if (n.includes('ENFER')) return 'ENFERMAGEM';
@@ -85,25 +92,16 @@ export default function ReportScreen({ navigation }) {
           if (n.includes('MAQUI')) return 'MAQUIAGEM';
           if (n.includes('OCULO') || n.includes('ÓCULO'))
             return 'ENTREGA DE ÓCULOS';
-
           return null;
         };
 
         const categoryMap = {};
-
         categoriesRaw.forEach(cat => {
-          categoriesRaw.forEach(cat => {
-            console.log('🟩 Serviço:', cat.name);
-            console.log('🟦 Lista completa de participants:', cat.participants);
-          });
-
           const nameKey = normalize(cat.name);
           if (!nameKey) return;
-
           let count = Array.isArray(cat.participants)
             ? cat.participants.length
             : 0;
-
           categoryMap[nameKey] = count;
         });
 
@@ -121,10 +119,8 @@ export default function ReportScreen({ navigation }) {
 
         setReport({
           title: firstEvent?.event_name || 'Mutirão Rural',
-
           date: formattedDate,
           location: location,
-
           totalAttendees: total,
           services: servicesWithPct,
         });
@@ -135,6 +131,50 @@ export default function ReportScreen({ navigation }) {
 
     loadReport();
   }, [eventId]);
+
+  const handleGeneratePdf = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    // Use a URL da sua API que precisa de autenticação
+    const pdfUrl = `https://hsgee.senarmt.org.br/api/v1/auth/relatorio-atendimentos/${eventId}`;
+
+    // Caminho local para salvar
+    const localFilePath = `${RNFS.CachesDirectoryPath}/relatorio-mutirao-${eventId}.pdf`;
+
+    console.log('Iniciando download de:', pdfUrl);
+
+    try {
+      // 👇 ALTERADO para usar 'apiAxios.get'
+      const response = await apiAxios.get(pdfUrl, {
+        // 👈
+        responseType: 'arraybuffer',
+      });
+
+      // Converte dados 'arraybuffer' para base64
+      const base64data = btoa(
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          '',
+        ),
+      );
+
+      // Salva o arquivo
+      await RNFS.writeFile(localFilePath, base64data, 'base64');
+      console.log('Arquivo salvo com sucesso:', localFilePath);
+
+      // Abre o arquivo
+      await FileViewer.open(localFilePath, {
+        showOpenWithDialog: true,
+      });
+    } catch (error) {
+      console.error('Erro ao baixar ou abrir o PDF:', error);
+      Alert.alert('Erro', 'Não foi possível gerar o PDF. Tente novamente.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (!report) {
     return (
       <View style={styles.loadingContainer}>
@@ -158,17 +198,14 @@ export default function ReportScreen({ navigation }) {
       >
         <View style={styles.cardContainer}>
           <Text style={styles.statsTitle}>Estatísticas Mutirão Rural</Text>
-
           <View style={styles.statsRow}>
             <CalendarFill color="#00A859" />
             <Text style={styles.statsText}>{report.date}</Text>
           </View>
-
           <View style={styles.statsRow}>
             <MapPin color="#00A859" />
             <Text style={styles.statsText}>{report.location}</Text>
           </View>
-
           <View style={styles.statsRow}>
             <PeopleFilled color="#00A859" />
             <Text style={styles.statsText}>
@@ -207,8 +244,8 @@ export default function ReportScreen({ navigation }) {
               navigation.navigate('ServiceDetails', {
                 serviceName: service.name,
                 eventId: eventId,
-                date: report.date, // 👈 ADICIONE A DATA
-                location: report.location, // 👈 ADICIONE O LOCAL
+                date: report.date,
+                location: report.location,
               })
             }
           >
@@ -218,7 +255,6 @@ export default function ReportScreen({ navigation }) {
                 {service.percentage}% do total
               </Text>
             </View>
-
             <View style={styles.serviceCountContainer}>
               <Text style={styles.serviceCount}>{service.count}</Text>
               <Text style={styles.serviceCountLabel}>atendimentos</Text>
@@ -227,12 +263,25 @@ export default function ReportScreen({ navigation }) {
         ))}
       </ScrollView>
 
-      {/* <View style={styles.footer}>
-        <TouchableOpacity style={styles.exportButton}>
-          <OutlineFileDownload width={s(20)} height={s(20)} color="#FFFFFF" />
-          <Text style={styles.exportButtonText}>Exportar PDF</Text>
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.exportButton,
+            isDownloading && styles.exportButtonDisabled,
+          ]}
+          onPress={handleGeneratePdf}
+          disabled={isDownloading}
+        >
+          {isDownloading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <OutlineFileDownload width={s(20)} height={s(20)} color="#FFFFFF" />
+          )}
+          <Text style={styles.exportButtonText}>
+            {isDownloading ? 'Gerando PDF...' : 'Gerar PDF'}
+          </Text>
         </TouchableOpacity>
-      </View> */}
+      </View>
     </View>
   );
 }
@@ -365,6 +414,8 @@ const styles = StyleSheet.create({
     paddingBottom: vs(25),
     paddingTop: vs(10),
     backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
   },
   exportButton: {
     backgroundColor: '#00A859',
@@ -375,8 +426,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 3,
   },
+  exportButtonDisabled: {
+    backgroundColor: '#a3d1b9',
+  },
   exportButtonText: {
-    fontWeight: 'normal',
+    fontWeight: 'bold',
     fontSize: ms(14),
     color: '#FFFFFF',
     marginLeft: s(10),
